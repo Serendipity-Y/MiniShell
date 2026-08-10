@@ -64,13 +64,13 @@ final class ConnectionListViewModel {
     // MARK: - Computed Properties
 
     var filteredConnections: [Connection] {
-        var result: [Connection]
+        var result = connections.filter(\.isSFTPConnection)
 
         switch selectedSidebarItem {
         case .allConnections:
-            result = connections
+            break
         case .folder(let folderId):
-            result = connections.filter { $0.folderId == folderId }
+            result = result.filter { $0.folderId == folderId }
         }
 
         if !searchText.isEmpty {

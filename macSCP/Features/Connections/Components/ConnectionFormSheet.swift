@@ -90,7 +90,7 @@ struct ConnectionFormSheet: View {
                 if !isEditMode {
                     Section {
                         Picker("Type", selection: $selectedType) {
-                            ForEach(ConnectionType.allCases, id: \.self) { type in
+                            ForEach(ConnectionType.selectableCases, id: \.self) { type in
                                 Text(type.displayName).tag(type)
                             }
                         }

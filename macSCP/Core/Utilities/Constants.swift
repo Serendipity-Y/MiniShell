@@ -10,9 +10,9 @@ import SwiftUI
 
 // MARK: - App Constants
 enum AppConstants {
-    static let bundleIdentifier = "com.macSCP"
-    static let keychainService = "com.macSCP.ssh"
-    static let keychainS3Service = "com.macSCP.s3"
+    static let bundleIdentifier = "com.minishell.app"
+    static let keychainService = "com.minishell.ssh"
+    static let keychainS3Service = "com.minishell.s3"
     static let defaultSSHPort = 22
     static let maxRecentConnections = 10
 }

@@ -9,6 +9,7 @@ import Foundation
 import TelemetryClient
 
 enum AnalyticsService {
+    private static let telemetryEnabled = false
     // MARK: - Storage Keys
 
     private enum StorageKey {
@@ -68,6 +69,8 @@ enum AnalyticsService {
     // MARK: - Configuration
 
     static func initialize() {
+        guard telemetryEnabled else { return }
+
         let config = TelemetryManagerConfiguration(appID: "B5BEE195-393B-4B84-8B10-0BEC90496251")
         config.defaultUser = anonymousUserId
         TelemetryManager.initialize(with: config)
@@ -86,10 +89,12 @@ enum AnalyticsService {
     // MARK: - Core Tracking
 
     static func track(_ event: Event) {
+        guard telemetryEnabled else { return }
         TelemetryManager.send(event.rawValue)
     }
 
     static func track(_ event: Event, with parameters: [String: String]) {
+        guard telemetryEnabled else { return }
         TelemetryManager.send(event.rawValue, with: parameters)
     }
 

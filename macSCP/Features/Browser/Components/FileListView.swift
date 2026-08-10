@@ -9,7 +9,6 @@ import SwiftUI
 
 struct FileListView: View {
     @Bindable var viewModel: FileBrowserViewModel
-    let onOpenEditor: (RemoteFile) -> Void
     let onGetInfo: (RemoteFile) -> Void
 
     var body: some View {
@@ -17,7 +16,7 @@ struct FileListView: View {
             viewModel: viewModel,
             onDoubleClick: handleDoubleClick,
             onGetInfo: onGetInfo,
-            onOpenEditor: onOpenEditor
+            onOpenEditor: nil
         )
     }
 
@@ -25,8 +24,6 @@ struct FileListView: View {
         Task {
             if file.isDirectory {
                 await viewModel.navigateTo(file.path)
-            } else if FileTypeService.isPreviewable(file) {
-                onOpenEditor(file)
             }
         }
     }
@@ -40,7 +37,6 @@ struct FileListView: View {
             sftpSession: SFTPSession(),
             password: "test"
         ),
-        onOpenEditor: { _ in },
         onGetInfo: { _ in }
     )
 }

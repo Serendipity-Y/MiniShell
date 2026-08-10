@@ -248,7 +248,6 @@ struct FileBrowserView: View {
         case .success:
             FileListView(
                 viewModel: viewModel,
-                onOpenEditor: openFileInEditor,
                 onGetInfo: showFileInfo
             )
 
@@ -308,17 +307,6 @@ struct FileBrowserView: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 6)
         .background(.bar)
-    }
-
-    private func openFileInEditor(_ file: RemoteFile) {
-        Task {
-            do {
-                let content = try await viewModel.getFileContent(file)
-                viewModel.openEditor(for: file, content: content)
-            } catch {
-                viewModel.error = AppError.from(error)
-            }
-        }
     }
 
     private func showFileInfo(_ file: RemoteFile) {

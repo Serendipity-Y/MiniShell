@@ -32,11 +32,6 @@ final class KeychainService: KeychainServiceProtocol, @unchecked Sendable {
             kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked
         ]
 
-        // Add access group for consistent access across app launches
-        #if !targetEnvironment(simulator)
-        query[kSecAttrAccessGroup as String] = "com.macSCP.keychain"
-        #endif
-
         let status = SecItemAdd(query as CFDictionary, nil)
 
         if status != errSecSuccess {
@@ -56,10 +51,6 @@ final class KeychainService: KeychainServiceProtocol, @unchecked Sendable {
             kSecMatchLimit as String: kSecMatchLimitOne
         ]
 
-        #if !targetEnvironment(simulator)
-        query[kSecAttrAccessGroup as String] = "com.macSCP.keychain"
-        #endif
-
         var result: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
 
@@ -78,10 +69,6 @@ final class KeychainService: KeychainServiceProtocol, @unchecked Sendable {
             kSecAttrService as String: service,
             kSecAttrAccount as String: connectionId.uuidString
         ]
-
-        #if !targetEnvironment(simulator)
-        query[kSecAttrAccessGroup as String] = "com.macSCP.keychain"
-        #endif
 
         let status = SecItemDelete(query as CFDictionary)
 
@@ -103,10 +90,6 @@ final class KeychainService: KeychainServiceProtocol, @unchecked Sendable {
             kSecAttrService as String: service,
             kSecAttrAccount as String: connectionId.uuidString
         ]
-
-        #if !targetEnvironment(simulator)
-        query[kSecAttrAccessGroup as String] = "com.macSCP.keychain"
-        #endif
 
         let attributes: [String: Any] = [
             kSecValueData as String: passwordData
@@ -150,10 +133,6 @@ final class KeychainService: KeychainServiceProtocol, @unchecked Sendable {
             kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked
         ]
 
-        #if !targetEnvironment(simulator)
-        query[kSecAttrAccessGroup as String] = "com.macSCP.keychain"
-        #endif
-
         let status = SecItemAdd(query as CFDictionary, nil)
 
         if status != errSecSuccess {
@@ -173,10 +152,6 @@ final class KeychainService: KeychainServiceProtocol, @unchecked Sendable {
             kSecMatchLimit as String: kSecMatchLimitOne
         ]
 
-        #if !targetEnvironment(simulator)
-        query[kSecAttrAccessGroup as String] = "com.macSCP.keychain"
-        #endif
-
         var result: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
 
@@ -195,10 +170,6 @@ final class KeychainService: KeychainServiceProtocol, @unchecked Sendable {
             kSecAttrService as String: s3Service,
             kSecAttrAccount as String: connectionId.uuidString
         ]
-
-        #if !targetEnvironment(simulator)
-        query[kSecAttrAccessGroup as String] = "com.macSCP.keychain"
-        #endif
 
         let status = SecItemDelete(query as CFDictionary)
 
@@ -220,10 +191,6 @@ final class KeychainService: KeychainServiceProtocol, @unchecked Sendable {
             kSecAttrService as String: s3Service,
             kSecAttrAccount as String: connectionId.uuidString
         ]
-
-        #if !targetEnvironment(simulator)
-        query[kSecAttrAccessGroup as String] = "com.macSCP.keychain"
-        #endif
 
         let attributes: [String: Any] = [
             kSecValueData as String: credentialsData

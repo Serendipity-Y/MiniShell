@@ -11,10 +11,14 @@ enum ConnectionType: String, Codable, Sendable, CaseIterable {
     case sftp
     case s3
 
+    /// S3 remains in the stored model during the bootstrap phase, but MiniShell
+    /// deliberately exposes only SSH/SFTP connections in its interface.
+    static let selectableCases: [ConnectionType] = [.sftp]
+
     var displayName: String {
         switch self {
         case .sftp:
-            return "SFTP"
+            return "SSH / SFTP"
         case .s3:
             return "S3"
         }

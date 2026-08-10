@@ -10,20 +10,12 @@
                 <string>public.data</string>
             </array>
             <key>UTTypeDescription</key>
-            <string>macSCP Connection</string>
+            <string>MiniShell Connection</string>
             <key>UTTypeIdentifier</key>
-            <string>com.macnev2013.macSCP.connection</string>
+            <string>com.minishell.connection</string>
             <key>UTTypeTagSpecification</key>
             <dict/>
         </dict>
     </array>
-    <key>SUFeedURL</key>
-    <string>https://raw.githubusercontent.com/macnev2013/macSCP/main/appcast.xml</string>
-    <key>SUPublicEDKey</key>
-    <string>fkQ0x2i5js+9C0o32jJlZOUhNV3zCAC74nKKSUu1cUI=</string>
-    <key>SUEnableAutomaticChecks</key>
-    <true/>
-    <key>SUScheduledCheckInterval</key>
-    <integer>86400</integer>
 </dict>
 </plist>

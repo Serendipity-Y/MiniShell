@@ -369,7 +369,7 @@ extension NativeFileTableView.Coordinator {
 
         let menu = NSMenu()
 
-        if file.isFile {
+        if file.isFile, onOpenEditor != nil {
             let openItem = NSMenuItem(title: "Open in Editor", action: #selector(handleOpenInEditor(_:)), keyEquivalent: "")
             openItem.target = self
             openItem.representedObject = file

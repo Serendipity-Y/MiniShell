@@ -10,7 +10,7 @@ import CoreTransferable
 import UniformTypeIdentifiers
 
 extension UTType {
-    static let connection = UTType(exportedAs: "com.macnev2013.macSCP.connection")
+    static let connection = UTType(exportedAs: "com.minishell.connection")
 }
 
 struct Connection: Identifiable, Hashable, Sendable, Codable, Transferable {
