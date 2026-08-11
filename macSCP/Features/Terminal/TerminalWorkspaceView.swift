@@ -67,14 +67,10 @@ struct TerminalWorkspaceView: View {
     @Bindable var workspace: TerminalWorkspaceViewModel
     let onOpenSFTP: (TerminalWindowData) -> Void
     @State private var hoveredTabID: UUID?
+    private let tabBarHeight: CGFloat = 52
 
     var body: some View {
-        VStack(spacing: 0) {
-            tabBar
-                .zIndex(1)
-
-            Divider()
-
+        ZStack(alignment: .top) {
             if let selectedTab {
                 TerminalContentView(
                     viewModel: selectedTab.viewModel,
@@ -85,7 +81,14 @@ struct TerminalWorkspaceView: View {
                 )
                 .id(selectedTab.id)
                 .zIndex(0)
+                .padding(.top, tabBarHeight)
             }
+
+            VStack(spacing: 0) {
+                tabBar
+                Divider()
+            }
+            .zIndex(1)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .toolbar(id: "terminalWorkspaceToolbar") {
