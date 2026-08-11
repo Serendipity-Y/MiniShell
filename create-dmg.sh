@@ -1,88 +1,58 @@
 #!/bin/bash
 
-# macSCP DMG Creator Script
-# This script creates a distributable DMG installer for macSCP
+# MiniShell DMG Creator Script
+# Usage: VERSION=1.0.0 ./create-dmg.sh
 
-set -e
+set -euo pipefail
 
-APP_NAME="macSCP"
-VERSION="0.2.3"
-DMG_NAME="${APP_NAME}-${VERSION}"
-BUILD_DIR="build"
-DMG_DIR="dmg-staging"
-FINAL_DMG="${DMG_NAME}.dmg"
+APP_NAME="MiniShell"
+VERSION="${VERSION:?请通过 VERSION=1.0.0 指定发布版本}"
+BUILD_NUMBER="${BUILD_NUMBER:-$(date +%Y%m%d)}"
+RELEASE_BUILD_ROOT="${RELEASE_BUILD_ROOT:-build/release}"
+DERIVED_DATA_PATH="${RELEASE_BUILD_ROOT}/DerivedData"
+PRODUCT_APP="${DERIVED_DATA_PATH}/Build/Products/Release/${APP_NAME}.app"
+FINAL_DMG="${RELEASE_BUILD_ROOT}/${APP_NAME}-${VERSION}.dmg"
+STAGING_DIR="$(mktemp -d "${TMPDIR:-/tmp}/minishell-dmg.XXXXXX")"
 
-echo "🚀 Building macSCP..."
+cleanup() {
+    rm -rf "${STAGING_DIR}"
+}
+trap cleanup EXIT
 
-# Archive the app (Release build)
-xcodebuild archive \
+echo "正在构建 ${APP_NAME} ${VERSION}…"
+xcodebuild build \
     -project macSCP.xcodeproj \
     -scheme macSCP \
     -configuration Release \
-    -archivePath "${BUILD_DIR}/${APP_NAME}.xcarchive" \
-    CODE_SIGN_IDENTITY="-" \
-    CODE_SIGN_STYLE=Manual \
-    DEVELOPMENT_TEAM="" \
-    | xcpretty || xcodebuild archive \
-    -project macSCP.xcodeproj \
-    -scheme macSCP \
-    -configuration Release \
-    -archivePath "${BUILD_DIR}/${APP_NAME}.xcarchive" \
-    CODE_SIGN_IDENTITY="-" \
-    CODE_SIGN_STYLE=Manual \
-    DEVELOPMENT_TEAM=""
+    -derivedDataPath "${DERIVED_DATA_PATH}" \
+    CODE_SIGNING_ALLOWED=NO \
+    MARKETING_VERSION="${VERSION}" \
+    CURRENT_PROJECT_VERSION="${BUILD_NUMBER}"
 
-echo "✅ Build complete!"
-
-# Export the app
-echo "📦 Exporting app..."
-xcodebuild -exportArchive \
-    -archivePath "${BUILD_DIR}/${APP_NAME}.xcarchive" \
-    -exportPath "${BUILD_DIR}" \
-    -exportOptionsPlist exportOptions.plist
-
-# Create DMG staging directory
-echo "🎨 Creating DMG staging area..."
-rm -rf "${DMG_DIR}"
-mkdir -p "${DMG_DIR}"
-
-# Copy app to staging
-cp -R "${BUILD_DIR}/${APP_NAME}.app" "${DMG_DIR}/"
-
-# Create Applications symlink
-ln -s /Applications "${DMG_DIR}/Applications"
-
-# Create DMG
-echo "💿 Creating DMG..."
-rm -f "${FINAL_DMG}"
-hdiutil create -volname "${APP_NAME}" \
-    -srcfolder "${DMG_DIR}" \
-    -ov -format UDZO \
-    "${FINAL_DMG}"
-
-echo "✨ DMG created successfully: ${FINAL_DMG}"
-echo ""
-echo "📍 Location: $(pwd)/${FINAL_DMG}"
-echo "📦 Size: $(du -h "${FINAL_DMG}" | cut -f1)"
-
-# EdDSA signing for Sparkle updates
-echo ""
-echo "🔐 Signing DMG for Sparkle updates..."
-SIGN_UPDATE=$(find ~/Library/Developer/Xcode/DerivedData/macSCP-*/SourcePackages/artifacts/sparkle/Sparkle/bin -name sign_update 2>/dev/null | head -1)
-
-if [ -n "${SIGN_UPDATE}" ]; then
-    SIGNATURE_OUTPUT=$("${SIGN_UPDATE}" "${FINAL_DMG}")
-    echo "✅ DMG signed successfully"
-    echo ""
-    echo "📋 Add the following to appcast.xml <enclosure> tag:"
-    echo "${SIGNATURE_OUTPUT}"
-    echo ""
-    DMG_LENGTH=$(stat -f%z "${FINAL_DMG}")
-    echo "length=\"${DMG_LENGTH}\""
-else
-    echo "⚠️  sign_update not found in DerivedData. Build the project in Xcode first to resolve Sparkle SPM package."
-    echo "   Then run: find ~/Library/Developer/Xcode/DerivedData/macSCP-*/SourcePackages/artifacts/sparkle/Sparkle/bin -name sign_update"
+if [ ! -d "${PRODUCT_APP}" ]; then
+    echo "未找到构建产物：${PRODUCT_APP}" >&2
+    exit 1
 fi
 
-echo ""
-echo "To install: Double-click the DMG and drag ${APP_NAME} to Applications folder"
+actual_version=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "${PRODUCT_APP}/Contents/Info.plist")
+if [ "${actual_version}" != "${VERSION}" ]; then
+    echo "应用版本不匹配：期望 ${VERSION}，实际 ${actual_version}" >&2
+    exit 1
+fi
+
+mkdir -p "${RELEASE_BUILD_ROOT}"
+cp -R "${PRODUCT_APP}" "${STAGING_DIR}/${APP_NAME}.app"
+ln -s /Applications "${STAGING_DIR}/Applications"
+rm -f "${FINAL_DMG}"
+
+echo "正在创建 DMG…"
+hdiutil create \
+    -volname "${APP_NAME}" \
+    -srcfolder "${STAGING_DIR}" \
+    -ov \
+    -format UDZO \
+    "${FINAL_DMG}"
+
+echo "DMG 已创建：${FINAL_DMG}"
+echo "大小：$(du -h "${FINAL_DMG}" | cut -f1)"
+echo "安装方式：双击后将 ${APP_NAME} 拖入 Applications 文件夹。"

@@ -138,7 +138,7 @@
 				47384B6F2E96EB2800ECB4B5 /* Sources */,
 				47384B702E96EB2800ECB4B5 /* Frameworks */,
 				47384B712E96EB2800ECB4B5 /* Resources */,
-				47A0B1C22F4A000100000001 /* Stamp Version from Git Tag */,
+				47A0B1C22F4A000100000001 /* Stamp MiniShell Version */,
 			);
 			buildRules = (
 			);
@@ -256,7 +256,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		47A0B1C22F4A000100000001 /* Stamp Version from Git Tag */ = {
+		47A0B1C22F4A000100000001 /* Stamp MiniShell Version */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -264,12 +264,12 @@
 			);
 			inputPaths = (
 			);
-			name = "Stamp Version from Git Tag";
+			name = "Stamp MiniShell Version";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
-			shellScript = "#!/bin/bash\\n# Auto-version from git tags\\n# CI can override via MACSCP_VERSION / MACSCP_BUILD_NUMBER env vars\\n\\nPLIST=\"${BUILT_PRODUCTS_DIR}/${INFOPLIST_PATH}\"\\n\\nif [ ! -f \"$PLIST\" ]; then\\n    echo \"warning: Info.plist not found at $PLIST, skipping version stamp\"\\n    exit 0\\nfi\\n\\n# --- Marketing version ---\\nif [ -n \"$MACSCP_VERSION\" ]; then\\n    VERSION=\"$MACSCP_VERSION\"\\nelse\\n    VERSION=$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null | sed 's/^v//')\\nfi\\n\\nif [ -n \"$VERSION\" ] && echo \"$VERSION\" | grep -qE '^[0-9]+\\\\.[0-9]+\\\\.[0-9]+$'; then\\n    /usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $VERSION\" \"$PLIST\"\\n    echo \"Stamped marketing version: $VERSION\"\\nelse\\n    echo \"warning: Could not determine version from git tag, keeping plist default\"\\nfi\\n\\n# --- Build number ---\\nif [ -n \"$MACSCP_BUILD_NUMBER\" ]; then\\n    BUILD=\"$MACSCP_BUILD_NUMBER\"\\nelse\\n    BUILD=$(date +%m%d%Y)\\nfi\\n\\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $BUILD\" \"$PLIST\"\\necho \"Stamped build number: $BUILD\"\\n";
+			shellScript = "#!/bin/bash\\n# Version is defined by MiniShell's target build settings.\\n\\nPLIST=\"${BUILT_PRODUCTS_DIR}/${INFOPLIST_PATH}\"\\nVERSION=\"${MARKETING_VERSION}\"\\nBUILD=\"${CURRENT_PROJECT_VERSION}\"\\n\\nif [ ! -f \"$PLIST\" ]; then\\n    echo \"warning: Info.plist not found at $PLIST, skipping version stamp\"\\n    exit 0\\nfi\\n\\nif ! echo \"$VERSION\" | grep -qE '^[0-9]+\\\\.[0-9]+\\\\.[0-9]+$'; then\\n    echo \"error: Invalid MiniShell marketing version: $VERSION\" >&2\\n    exit 1\\nfi\\n\\nif ! echo \"$BUILD\" | grep -qE '^[0-9]+$'; then\\n    echo \"error: Invalid MiniShell build number: $BUILD\" >&2\\n    exit 1\\nfi\\n\\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $VERSION\" \"$PLIST\"\\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $BUILD\" \"$PLIST\"\\necho \"Stamped MiniShell version: $VERSION ($BUILD)\"\\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -479,7 +479,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 02122026;
+				CURRENT_PROJECT_VERSION = 20260811;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_FILE_ACCESS_DOWNLOADS_FOLDER = readwrite;
@@ -504,7 +504,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.2.4;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.minishell.app;
 				PRODUCT_NAME = MiniShell;
 				REGISTER_APP_GROUPS = YES;
@@ -527,7 +527,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 02122026;
+				CURRENT_PROJECT_VERSION = 20260811;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_FILE_ACCESS_DOWNLOADS_FOLDER = readwrite;
@@ -552,7 +552,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.2.4;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.minishell.app;
 				PRODUCT_NAME = MiniShell;
 				REGISTER_APP_GROUPS = YES;

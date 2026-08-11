@@ -17,13 +17,6 @@ struct SidebarView: View {
     var body: some View {
         VStack(spacing: 0) {
             List(selection: $viewModel.selectedConnectionId) {
-                Section("会话管理器") {
-                    Label("会话管理器", systemImage: "rectangle.3.group")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(.secondary)
-                        .listRowSeparator(.hidden)
-                }
-
                 Section {
                     Button {
                         viewModel.selectedSidebarItem = .allConnections
