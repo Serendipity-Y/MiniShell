@@ -34,7 +34,11 @@ struct TerminalWindow: View {
                 }
                 .padding(32)
             } else if let viewModel = viewModel {
-                TerminalContentView(viewModel: viewModel, onOpenSFTP: openSFTPWorkspace)
+                TerminalContentView(
+                    viewModel: viewModel,
+                    onOpenSFTP: openSFTPWorkspace,
+                    disconnectOnDisappear: true
+                )
             } else {
                 LoadingView(message: "正在初始化…")
                     .task {

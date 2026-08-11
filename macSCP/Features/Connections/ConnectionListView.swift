@@ -12,6 +12,7 @@ struct ConnectionListView: View {
     @Environment(\.openWindow) private var openWindow
     @State private var newFolderName = ""
     @State private var isSessionSidebarVisible = true
+    @State private var terminalWorkspace = TerminalWorkspaceViewModel()
 
     init(viewModel: ConnectionListViewModel) {
         self.viewModel = viewModel
@@ -19,7 +20,12 @@ struct ConnectionListView: View {
 
     @ViewBuilder
     private var detailColumn: some View {
-        if let connection = viewModel.selectedConnection {
+        if terminalWorkspace.hasTabs {
+            TerminalWorkspaceView(
+                workspace: terminalWorkspace,
+                onOpenSFTP: openSFTPWorkspace
+            )
+        } else if let connection = viewModel.selectedConnection {
             ConnectionDetailView(
                 connection: connection,
                 onConnect: {
@@ -174,13 +180,27 @@ struct ConnectionListView: View {
                 viewModel.clearPendingWindow()
             }
         }
-        .onChange(of: viewModel.pendingTerminalWindowId) { _, windowId in
-            if let windowId = windowId {
-                logInfo("Opening terminal window with ID: \(windowId)", category: .ui)
-                openWindow(id: WindowID.terminal, value: windowId)
-                viewModel.clearPendingTerminalWindow()
+        .onChange(of: viewModel.terminalRequestID) { _, _ in
+            if let data = viewModel.pendingTerminalData {
+                terminalWorkspace.openTerminal(with: data)
+                viewModel.clearPendingTerminalRequest()
             }
         }
+    }
+
+    private func openSFTPWorkspace(_ data: TerminalWindowData) {
+        let browserData = FileBrowserWindowData(
+            connectionId: data.connectionId,
+            connectionName: data.connectionName,
+            host: data.host,
+            port: data.port,
+            username: data.username,
+            password: data.password,
+            authMethod: data.authMethod,
+            privateKeyPath: data.privateKeyPath
+        )
+        let browserWindowId = WindowManager.shared.storeFileBrowserData(browserData)
+        openWindow(id: WindowID.fileBrowser, value: browserWindowId)
     }
 }
 

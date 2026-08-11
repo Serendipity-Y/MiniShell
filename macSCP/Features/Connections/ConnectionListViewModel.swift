@@ -13,6 +13,11 @@ enum SidebarSelection: Hashable, Sendable {
     case folder(UUID)
 }
 
+private enum PendingConnectionDestination {
+    case fileTransfer
+    case terminal
+}
+
 @MainActor
 @Observable
 final class ConnectionListViewModel {
@@ -40,7 +45,9 @@ final class ConnectionListViewModel {
 
     // Window opening state
     var pendingWindowId: String?
-    var pendingTerminalWindowId: String?
+    var pendingTerminalData: TerminalWindowData?
+    var terminalRequestID: UUID?
+    private var pendingConnectionDestination: PendingConnectionDestination?
 
     // MARK: - Dependencies
     private let connectionRepository: ConnectionRepositoryProtocol
@@ -297,6 +304,7 @@ final class ConnectionListViewModel {
 
         Task { @MainActor in
             // Gate connection behind biometric auth if configured
+            pendingConnectionDestination = .fileTransfer
             let allowed = await AppLockManager.shared.authenticateForConnection()
             guard allowed else {
                 logInfo("Connection cancelled: biometric auth denied", category: .auth)
@@ -333,14 +341,16 @@ final class ConnectionListViewModel {
 
     func connectWithPassword(_ password: String) {
         guard let connection = connectionToConnect else { return }
-        openFileBrowser(for: connection, password: password)
-        isShowingPasswordPrompt = false
-        connectionToConnect = nil
+        if pendingConnectionDestination == .terminal {
+            openTerminal(for: connection, password: password)
+        } else {
+            openFileBrowser(for: connection, password: password)
+        }
+        clearPendingConnectionRequest()
     }
 
     func cancelConnect() {
-        isShowingPasswordPrompt = false
-        connectionToConnect = nil
+        clearPendingConnectionRequest()
     }
 
     private func openFileBrowser(for connection: Connection, password: String) {
@@ -371,8 +381,9 @@ final class ConnectionListViewModel {
         pendingWindowId = nil
     }
 
-    func clearPendingTerminalWindow() {
-        pendingTerminalWindowId = nil
+    func clearPendingTerminalRequest() {
+        pendingTerminalData = nil
+        terminalRequestID = nil
     }
 
     // MARK: - Terminal Operations
@@ -395,9 +406,8 @@ final class ConnectionListViewModel {
             privateKeyPath: connection.privateKeyPath
         )
 
-        let windowId = windowManager.storeTerminalData(data)
-        logInfo("Stored terminal window data with ID: \(windowId)", category: .ui)
-        pendingTerminalWindowId = windowId
+        pendingTerminalData = data
+        terminalRequestID = UUID()
     }
 
     func requestTerminal(for connection: Connection) {
@@ -415,6 +425,7 @@ final class ConnectionListViewModel {
             }
 
             connectionToConnect = connection
+            pendingConnectionDestination = .terminal
 
             // Check for saved password
             if let savedPassword = keychainService.getPassword(for: connection.id) {
@@ -433,6 +444,11 @@ final class ConnectionListViewModel {
     func openTerminalWithPassword(_ password: String) {
         guard let connection = connectionToConnect else { return }
         openTerminal(for: connection, password: password)
+        clearPendingConnectionRequest()
+    }
+
+    private func clearPendingConnectionRequest() {
+        pendingConnectionDestination = nil
         isShowingPasswordPrompt = false
         connectionToConnect = nil
     }

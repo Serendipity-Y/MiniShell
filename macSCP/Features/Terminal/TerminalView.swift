@@ -14,6 +14,7 @@ import SwiftTerm
 struct TerminalContentView: View {
     @Bindable var viewModel: TerminalViewModel
     let onOpenSFTP: () -> Void
+    let disconnectOnDisappear: Bool
 
     @State private var showConnectionLostBanner = false
     @State private var showSessionEndedBanner = false
@@ -57,9 +58,8 @@ struct TerminalContentView: View {
             await viewModel.connect()
         }
         .onDisappear {
-            Task {
-                await viewModel.cleanup()
-            }
+            guard disconnectOnDisappear else { return }
+            Task { await viewModel.cleanup() }
         }
         .onChange(of: viewModel.state) { oldState, newState in
             // Show banner overlay when connection is lost while terminal was connected
@@ -382,6 +382,7 @@ struct SwiftTermView: NSViewRepresentable {
                 privateKeyPath: nil
             )
         ),
-        onOpenSFTP: {}
+        onOpenSFTP: {},
+        disconnectOnDisappear: true
     )
 }
