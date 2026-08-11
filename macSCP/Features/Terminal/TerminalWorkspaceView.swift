@@ -127,11 +127,10 @@ struct TerminalWorkspaceView: View {
 
                                 Text(tab.title)
                                     .lineLimit(1)
-
-                                Spacer(minLength: 18)
                             }
                             .padding(.horizontal, 10)
                             .padding(.vertical, 7)
+                            .padding(.trailing, 22)
                             .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
