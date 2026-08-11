@@ -157,6 +157,10 @@ struct SidebarView: View {
             } else {
                 ForEach(viewModel.filteredConnections) { connection in
                     ConnectionRowView(connection: connection)
+                        .contentShape(Rectangle())
+                        .onTapGesture(count: 2) {
+                            viewModel.requestTerminal(for: connection)
+                        }
                         .draggable(connection)
                         .contextMenu {
                             connectionContextMenu(for: connection)
