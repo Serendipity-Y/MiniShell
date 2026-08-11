@@ -51,6 +51,11 @@ final class TerminalWorkspaceViewModel {
             await tab.viewModel.cleanup()
         }
     }
+
+    func duplicateTerminal(id: UUID) {
+        guard let tab = tabs.first(where: { $0.id == id }) else { return }
+        openTerminal(with: tab.data)
+    }
 }
 
 struct TerminalWorkspaceView: View {
@@ -106,6 +111,21 @@ struct TerminalWorkspaceView: View {
                     .contentShape(Rectangle())
                     .onTapGesture {
                         workspace.selectedTabID = tab.id
+                    }
+                    .contextMenu {
+                        Button {
+                            workspace.duplicateTerminal(id: tab.id)
+                        } label: {
+                            Label("复制会话", systemImage: "plus.square.on.square")
+                        }
+
+                        Divider()
+
+                        Button(role: .destructive) {
+                            workspace.closeTerminal(id: tab.id)
+                        } label: {
+                            Label("关闭终端", systemImage: "xmark")
+                        }
                     }
                 }
             }

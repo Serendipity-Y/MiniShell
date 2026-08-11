@@ -15,86 +15,92 @@ struct SidebarView: View {
     @State private var isShowingRenameAlert = false
 
     var body: some View {
-        List(selection: $viewModel.selectedConnectionId) {
-            Section("会话管理器") {
-                Label("会话管理器", systemImage: "rectangle.3.group")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.secondary)
-                    .listRowSeparator(.hidden)
-            }
-
-            Section {
-                Button {
-                    viewModel.selectedSidebarItem = .allConnections
-                    viewModel.selectedConnectionId = nil
-                } label: {
-                    Label {
-                        HStack {
-                            Text("全部连接")
-                            Spacer()
-                            Text("\(viewModel.totalConnectionCount)")
-                                .foregroundStyle(.secondary)
-                        }
-                    } icon: {
-                        Image(systemName: "server.rack")
-                            .foregroundStyle(Color.accentColor)
-                    }
-                }
-                .buttonStyle(.plain)
-                .dropDestination(for: Connection.self) { connections, _ in
-                    for connection in connections {
-                        Task { await viewModel.moveConnection(connection, to: nil) }
-                    }
-                    return true
+        VStack(spacing: 0) {
+            List(selection: $viewModel.selectedConnectionId) {
+                Section("会话管理器") {
+                    Label("会话管理器", systemImage: "rectangle.3.group")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                        .listRowSeparator(.hidden)
                 }
 
-                connectionRows
-            } header: {
-                Text(listTitle)
-            }
-
-            Section("文件夹") {
-                ForEach(viewModel.folders) { folder in
+                Section {
                     Button {
-                        viewModel.selectedSidebarItem = .folder(folder.id)
+                        viewModel.selectedSidebarItem = .allConnections
                         viewModel.selectedConnectionId = nil
                     } label: {
-                        FolderRowView(
-                            folder: folder,
-                            connectionCount: viewModel.connectionCount(for: folder.id)
-                        )
+                        Label {
+                            HStack {
+                                Text("全部连接")
+                                Spacer()
+                                Text("\(viewModel.totalConnectionCount)")
+                                    .foregroundStyle(.secondary)
+                            }
+                        } icon: {
+                            Image(systemName: "server.rack")
+                                .foregroundStyle(Color.accentColor)
+                        }
                     }
                     .buttonStyle(.plain)
                     .dropDestination(for: Connection.self) { connections, _ in
                         for connection in connections {
-                            Task { await viewModel.moveConnection(connection, to: folder) }
+                            Task { await viewModel.moveConnection(connection, to: nil) }
                         }
                         return true
                     }
-                    .contextMenu {
+
+                    connectionRows
+                } header: {
+                    Text(listTitle)
+                }
+
+                Section("文件夹") {
+                    ForEach(viewModel.folders) { folder in
                         Button {
-                            folderToRename = folder
-                            renameText = folder.name
-                            isShowingRenameAlert = true
+                            viewModel.selectedSidebarItem = .folder(folder.id)
+                            viewModel.selectedConnectionId = nil
                         } label: {
-                            Label("重命名", systemImage: "pencil")
+                            FolderRowView(
+                                folder: folder,
+                                connectionCount: viewModel.connectionCount(for: folder.id)
+                            )
                         }
+                        .buttonStyle(.plain)
+                        .dropDestination(for: Connection.self) { connections, _ in
+                            for connection in connections {
+                                Task { await viewModel.moveConnection(connection, to: folder) }
+                            }
+                            return true
+                        }
+                        .contextMenu {
+                            Button {
+                                folderToRename = folder
+                                renameText = folder.name
+                                isShowingRenameAlert = true
+                            } label: {
+                                Label("重命名", systemImage: "pencil")
+                            }
 
-                        Divider()
+                            Divider()
 
-                        Button(role: .destructive) {
-                            viewModel.confirmDeleteFolder(folder)
-                        } label: {
-                            Label("删除", systemImage: "trash")
+                            Button(role: .destructive) {
+                                viewModel.confirmDeleteFolder(folder)
+                            } label: {
+                                Label("删除", systemImage: "trash")
+                            }
                         }
                     }
-                }
-                .onMove { source, destination in
-                    viewModel.reorderFolders(from: source, to: destination)
+                    .onMove { source, destination in
+                        viewModel.reorderFolders(from: source, to: destination)
+                    }
                 }
             }
+            .listStyle(.sidebar)
+
+            Divider()
+
+            connectionInfoPanel
         }
-        .listStyle(.sidebar)
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
                 Button {
@@ -138,6 +144,42 @@ struct SidebarView: View {
             return "全部连接"
         case .folder(let id):
             return viewModel.folders.first { $0.id == id }?.name ?? "文件夹"
+        }
+    }
+
+    @ViewBuilder
+    private var connectionInfoPanel: some View {
+        if let connection = viewModel.selectedConnection {
+            Grid(alignment: .leading, horizontalSpacing: 14, verticalSpacing: 7) {
+                GridRow {
+                    Text("名称")
+                    Text(connection.name)
+                }
+                GridRow {
+                    Text("主机")
+                    Text(connection.host)
+                }
+                GridRow {
+                    Text("端口")
+                    Text("\(connection.port)")
+                }
+                GridRow {
+                    Text("协议")
+                    Text("SSH")
+                }
+                GridRow {
+                    Text("用户名")
+                    Text(connection.username)
+                }
+            }
+            .font(.system(size: 12))
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(12)
+        } else {
+            Text("选择会话后显示连接信息")
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, minHeight: 130, alignment: .center)
         }
     }
 
