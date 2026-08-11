@@ -82,6 +82,7 @@ struct TerminalWorkspaceView: View {
                     showsToolbar: false,
                     isActive: true
                 )
+                .id(selectedTab.id)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -148,11 +149,21 @@ struct TerminalWorkspaceView: View {
                     }
                     .font(.system(size: 13, weight: .medium))
                     .background(tabBackground(for: tab), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .stroke(tabBorder(for: tab), lineWidth: 1)
+                    }
                     .contentShape(Rectangle())
                     .onHover { isHovering in
                         hoveredTabID = isHovering ? tab.id : (hoveredTabID == tab.id ? nil : hoveredTabID)
                     }
-                    .animation(.easeOut(duration: 0.12), value: hoveredTabID)
+                    .scaleEffect(tab.id == hoveredTabID ? 1.015 : 1)
+                    .shadow(
+                        color: tab.id == hoveredTabID ? .black.opacity(0.26) : .clear,
+                        radius: tab.id == hoveredTabID ? 5 : 0,
+                        y: tab.id == hoveredTabID ? 2 : 0
+                    )
+                    .animation(.easeOut(duration: 0.14), value: hoveredTabID)
                     .contextMenu {
                         Button {
                             workspace.duplicateTerminal(id: tab.id)
@@ -190,10 +201,17 @@ struct TerminalWorkspaceView: View {
 
     private func tabBackground(for tab: TerminalTab) -> Color {
         if tab.id == workspace.selectedTabID {
-            return Color.accentColor.opacity(0.16)
+            return tab.id == hoveredTabID ? Color.accentColor.opacity(0.28) : Color.accentColor.opacity(0.20)
         }
         if tab.id == hoveredTabID {
-            return Color.primary.opacity(0.10)
+            return Color.white.opacity(0.14)
+        }
+        return .clear
+    }
+
+    private func tabBorder(for tab: TerminalTab) -> Color {
+        if tab.id == hoveredTabID {
+            return tab.id == workspace.selectedTabID ? Color.accentColor.opacity(0.75) : Color.white.opacity(0.22)
         }
         return .clear
     }

@@ -11,6 +11,7 @@ struct ConnectionRowView: View {
     let connection: Connection
 
     private let iconColor = Color.blue
+    @State private var isHovering = false
 
     var body: some View {
         HStack(spacing: 10) {
@@ -52,6 +53,24 @@ struct ConnectionRowView: View {
                 }
             }
         }
+        .padding(.horizontal, 5)
         .padding(.vertical, 4)
+        .background(rowBackground, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                .stroke(isHovering ? Color.white.opacity(0.22) : .clear, lineWidth: 1)
+        }
+        .scaleEffect(isHovering ? 1.012 : 1)
+        .shadow(
+            color: isHovering ? .black.opacity(0.22) : .clear,
+            radius: isHovering ? 5 : 0,
+            y: isHovering ? 2 : 0
+        )
+        .onHover { isHovering = $0 }
+        .animation(.easeOut(duration: 0.14), value: isHovering)
+    }
+
+    private var rowBackground: Color {
+        isHovering ? Color.white.opacity(0.14) : .clear
     }
 }
