@@ -73,7 +73,8 @@ struct TerminalWorkspaceView: View {
                     TerminalContentView(
                         viewModel: tab.viewModel,
                         onOpenSFTP: { onOpenSFTP(tab.data) },
-                        disconnectOnDisappear: false
+                        disconnectOnDisappear: false,
+                        showsToolbar: false
                     )
                     .opacity(tab.id == workspace.selectedTabID ? 1 : 0)
                     .allowsHitTesting(tab.id == workspace.selectedTabID)
@@ -81,6 +82,30 @@ struct TerminalWorkspaceView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .toolbar(id: "terminalWorkspaceToolbar") {
+            if let selectedTab {
+                ToolbarItem(id: "sftp", placement: .primaryAction) {
+                    Button {
+                        onOpenSFTP(selectedTab.data)
+                    } label: {
+                        Label("SFTP 文件传输", systemImage: "folder.badge.gearshape")
+                    }
+                    .help("打开本机与远端双栏文件传输")
+                }
+
+                ToolbarItem(id: "reconnect", placement: .primaryAction) {
+                    Button {
+                        Task {
+                            await selectedTab.viewModel.reconnect()
+                        }
+                    } label: {
+                        Label("重新连接", systemImage: "arrow.clockwise")
+                    }
+                    .disabled(selectedTab.viewModel.state == .connecting)
+                    .help("重新连接")
+                }
+            }
+        }
     }
 
     private var tabBar: some View {
@@ -146,4 +171,9 @@ struct TerminalWorkspaceView: View {
             return .secondary
         }
     }
+
+    private var selectedTab: TerminalTab? {
+        workspace.tabs.first { $0.id == workspace.selectedTabID }
+    }
+
 }

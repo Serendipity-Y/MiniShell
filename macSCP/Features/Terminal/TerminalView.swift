@@ -15,11 +15,41 @@ struct TerminalContentView: View {
     @Bindable var viewModel: TerminalViewModel
     let onOpenSFTP: () -> Void
     let disconnectOnDisappear: Bool
+    let showsToolbar: Bool
 
     @State private var showConnectionLostBanner = false
     @State private var showSessionEndedBanner = false
 
+    @ViewBuilder
     var body: some View {
+        if showsToolbar {
+            terminalBody
+                .toolbar(id: "terminalToolbar") {
+                    ToolbarItem(id: "sftp", placement: .primaryAction) {
+                        Button(action: onOpenSFTP) {
+                            Label("SFTP 文件传输", systemImage: "folder.badge.gearshape")
+                        }
+                        .help("打开本机与远端双栏文件传输")
+                    }
+
+                    ToolbarItem(id: "reconnect", placement: .primaryAction) {
+                        Button {
+                            Task {
+                                await viewModel.reconnect()
+                            }
+                        } label: {
+                            Label("重新连接", systemImage: "arrow.clockwise")
+                        }
+                        .disabled(viewModel.state == .connecting)
+                        .help("重新连接")
+                    }
+                }
+        } else {
+            terminalBody
+        }
+    }
+
+    private var terminalBody: some View {
         VStack(spacing: 0) {
             // Terminal content
             terminalContent
@@ -32,28 +62,6 @@ struct TerminalContentView: View {
         .frame(minWidth: WindowSize.minTerminal.width, minHeight: WindowSize.minTerminal.height)
         .navigationTitle(viewModel.connectionName)
         .navigationSubtitle(navigationSubtitleText)
-        .toolbar(id: "terminalToolbar") {
-            ToolbarItem(id: "sftp", placement: .primaryAction) {
-                Button(action: onOpenSFTP) {
-                    Label("SFTP 文件传输", systemImage: "folder.badge.gearshape")
-                }
-                .help("打开本机与远端双栏文件传输")
-            }
-
-            ToolbarItem(id: "reconnect", placement: .primaryAction) {
-                Button {
-                    Task {
-                        await viewModel.reconnect()
-                    }
-                } label: {
-                    Label("重新连接", systemImage: "arrow.clockwise")
-                }
-                .disabled(viewModel.state == .connecting)
-                .help("重新连接")
-            }
-
-
-        }
         .task {
             await viewModel.connect()
         }
@@ -383,6 +391,7 @@ struct SwiftTermView: NSViewRepresentable {
             )
         ),
         onOpenSFTP: {},
-        disconnectOnDisappear: true
+        disconnectOnDisappear: true,
+        showsToolbar: true
     )
 }
