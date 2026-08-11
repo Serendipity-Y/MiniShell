@@ -11,6 +11,10 @@ import SwiftData
 @main
 struct MacSCPApp: App {
     @StateObject private var container = DependencyContainer.shared
+    @AppStorage(TerminalAppearancePreferences.windowWidthKey)
+    private var terminalWindowWidth = TerminalAppearancePreferences.defaultWindowWidth
+    @AppStorage(TerminalAppearancePreferences.windowHeightKey)
+    private var terminalWindowHeight = TerminalAppearancePreferences.defaultWindowHeight
 
     init() {
         AppLockManager.shared.lockIfNeeded()
@@ -26,7 +30,7 @@ struct MacSCPApp: App {
                 }
         }
         .modelContainer(container.modelContainer)
-        .defaultSize(WindowSize.main)
+        .defaultSize(width: terminalWindowWidth, height: terminalWindowHeight)
         .restorationBehavior(.disabled)
         .commands {
             appCommands
@@ -74,7 +78,7 @@ struct MacSCPApp: App {
             }
         }
         .modelContainer(container.modelContainer)
-        .defaultSize(WindowSize.terminal)
+        .defaultSize(width: terminalWindowWidth, height: terminalWindowHeight)
         .restorationBehavior(.disabled)
 
         // Settings Window (Cmd+,)

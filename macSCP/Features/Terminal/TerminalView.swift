@@ -323,11 +323,18 @@ struct TerminalContentView: View {
 struct SwiftTermView: NSViewRepresentable {
     @Bindable var viewModel: TerminalViewModel
     let isActive: Bool
+    @AppStorage(TerminalAppearancePreferences.fontSizeKey)
+    private var terminalFontSize = TerminalAppearancePreferences.defaultFontSize
+    @AppStorage(TerminalAppearancePreferences.foregroundColorKey)
+    private var terminalForegroundColorHex = TerminalAppearancePreferences.defaultForegroundColor
+    @AppStorage(TerminalAppearancePreferences.backgroundColorKey)
+    private var terminalBackgroundColorHex = TerminalAppearancePreferences.defaultBackgroundColor
 
     func makeNSView(context: Context) -> TerminalView {
         let terminal = TerminalView()
         terminal.terminalDelegate = context.coordinator
         context.coordinator.terminal = terminal
+        applyAppearance(to: terminal)
 
         // Set up output callback
         viewModel.onOutput = { [weak coordinator = context.coordinator] data in
@@ -348,6 +355,7 @@ struct SwiftTermView: NSViewRepresentable {
 
     func updateNSView(_ terminal: TerminalView, context: Context) {
         context.coordinator.terminal = terminal
+        applyAppearance(to: terminal)
         if isActive, terminal.window?.firstResponder !== terminal {
             DispatchQueue.main.async {
                 terminal.window?.makeFirstResponder(terminal)
@@ -362,6 +370,32 @@ struct SwiftTermView: NSViewRepresentable {
 
     func makeCoordinator() -> Coordinator {
         Coordinator(viewModel: viewModel)
+    }
+
+    private func applyAppearance(to terminal: TerminalView) {
+        let fontSize = min(
+            max(terminalFontSize, TerminalAppearancePreferences.fontSizeRange.lowerBound),
+            TerminalAppearancePreferences.fontSizeRange.upperBound
+        )
+        if abs(terminal.font.pointSize - fontSize) > 0.01 {
+            terminal.font = NSFont.monospacedSystemFont(ofSize: fontSize, weight: .regular)
+        }
+
+        let foregroundColor = TerminalAppearancePreferences.nsColor(
+            from: terminalForegroundColorHex,
+            fallback: TerminalAppearancePreferences.defaultForegroundColor
+        )
+        if !terminal.nativeForegroundColor.isEqual(foregroundColor) {
+            terminal.nativeForegroundColor = foregroundColor
+        }
+
+        let backgroundColor = TerminalAppearancePreferences.nsColor(
+            from: terminalBackgroundColorHex,
+            fallback: TerminalAppearancePreferences.defaultBackgroundColor
+        )
+        if !terminal.nativeBackgroundColor.isEqual(backgroundColor) {
+            terminal.nativeBackgroundColor = backgroundColor
+        }
     }
 
     class Coordinator: NSObject, TerminalViewDelegate {
