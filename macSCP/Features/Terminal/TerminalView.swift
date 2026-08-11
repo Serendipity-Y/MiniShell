@@ -16,14 +16,17 @@ struct TerminalContentView: View {
     let onOpenSFTP: () -> Void
     let disconnectOnDisappear: Bool
     let showsToolbar: Bool
+    let isActive: Bool
 
     @State private var showConnectionLostBanner = false
     @State private var showSessionEndedBanner = false
 
     @ViewBuilder
     var body: some View {
+        let content = navigationContent
+
         if showsToolbar {
-            terminalBody
+            content
                 .toolbar(id: "terminalToolbar") {
                     ToolbarItem(id: "sftp", placement: .primaryAction) {
                         Button(action: onOpenSFTP) {
@@ -45,6 +48,17 @@ struct TerminalContentView: View {
                     }
                 }
         } else {
+            content
+        }
+    }
+
+    @ViewBuilder
+    private var navigationContent: some View {
+        if isActive {
+            terminalBody
+                .navigationTitle(viewModel.connectionName)
+                .navigationSubtitle(navigationSubtitleText)
+        } else {
             terminalBody
         }
     }
@@ -60,8 +74,6 @@ struct TerminalContentView: View {
             statusBar
         }
         .frame(minWidth: WindowSize.minTerminal.width, minHeight: WindowSize.minTerminal.height)
-        .navigationTitle(viewModel.connectionName)
-        .navigationSubtitle(navigationSubtitleText)
         .task {
             await viewModel.connect()
         }
@@ -130,7 +142,7 @@ struct TerminalContentView: View {
             if showSessionEndedBanner {
                 // Session ended gracefully — preserve terminal content with overlay
                 ZStack {
-                    SwiftTermView(viewModel: viewModel)
+                    SwiftTermView(viewModel: viewModel, isActive: isActive)
                         .allowsHitTesting(false)
                         .opacity(0.4)
 
@@ -158,13 +170,13 @@ struct TerminalContentView: View {
             LoadingView(message: "正在连接…")
 
         case .connected:
-            SwiftTermView(viewModel: viewModel)
+            SwiftTermView(viewModel: viewModel, isActive: isActive)
 
         case .error:
             if showConnectionLostBanner {
                 // Keep the terminal visible with a reconnect banner overlay
                 ZStack {
-                    SwiftTermView(viewModel: viewModel)
+                    SwiftTermView(viewModel: viewModel, isActive: isActive)
                         .allowsHitTesting(false)
                         .opacity(0.4)
 
@@ -309,6 +321,7 @@ struct TerminalContentView: View {
 
 struct SwiftTermView: NSViewRepresentable {
     @Bindable var viewModel: TerminalViewModel
+    let isActive: Bool
 
     func makeNSView(context: Context) -> TerminalView {
         let terminal = TerminalView()
@@ -322,9 +335,11 @@ struct SwiftTermView: NSViewRepresentable {
             }
         }
 
-        // Focus after appearing
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            terminal.window?.makeFirstResponder(terminal)
+        // Only the active tab may take the keyboard focus.
+        if isActive {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                terminal.window?.makeFirstResponder(terminal)
+            }
         }
 
         return terminal
@@ -332,6 +347,11 @@ struct SwiftTermView: NSViewRepresentable {
 
     func updateNSView(_ terminal: TerminalView, context: Context) {
         context.coordinator.terminal = terminal
+        if isActive, terminal.window?.firstResponder !== terminal {
+            DispatchQueue.main.async {
+                terminal.window?.makeFirstResponder(terminal)
+            }
+        }
     }
 
     func makeCoordinator() -> Coordinator {
@@ -392,6 +412,7 @@ struct SwiftTermView: NSViewRepresentable {
         ),
         onOpenSFTP: {},
         disconnectOnDisappear: true,
-        showsToolbar: true
+        showsToolbar: true,
+        isActive: true
     )
 }

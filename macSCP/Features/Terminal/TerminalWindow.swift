@@ -38,7 +38,8 @@ struct TerminalWindow: View {
                     viewModel: viewModel,
                     onOpenSFTP: openSFTPWorkspace,
                     disconnectOnDisappear: true,
-                    showsToolbar: true
+                    showsToolbar: true,
+                    isActive: true
                 )
             } else {
                 LoadingView(message: "正在初始化…")

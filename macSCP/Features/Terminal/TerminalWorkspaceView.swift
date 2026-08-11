@@ -74,10 +74,12 @@ struct TerminalWorkspaceView: View {
                         viewModel: tab.viewModel,
                         onOpenSFTP: { onOpenSFTP(tab.data) },
                         disconnectOnDisappear: false,
-                        showsToolbar: false
+                        showsToolbar: false,
+                        isActive: tab.id == workspace.selectedTabID
                     )
                     .opacity(tab.id == workspace.selectedTabID ? 1 : 0)
                     .allowsHitTesting(tab.id == workspace.selectedTabID)
+                    .zIndex(tab.id == workspace.selectedTabID ? 1 : 0)
                 }
             }
         }
