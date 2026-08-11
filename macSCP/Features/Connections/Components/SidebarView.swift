@@ -97,9 +97,10 @@ struct SidebarView: View {
             }
             .listStyle(.sidebar)
 
-            Divider()
-
-            connectionInfoPanel
+            if viewModel.selectedConnection != nil {
+                Divider()
+                connectionInfoPanel
+            }
         }
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
@@ -175,11 +176,6 @@ struct SidebarView: View {
             .font(.system(size: 12))
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(12)
-        } else {
-            Text("选择会话后显示连接信息")
-                .font(.system(size: 12))
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, minHeight: 130, alignment: .center)
         }
     }
 
