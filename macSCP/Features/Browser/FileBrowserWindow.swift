@@ -12,6 +12,7 @@ struct FileBrowserWindow: View {
     @State private var viewModel: FileBrowserViewModel?
     @State private var showMissingDataError = false
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         Group {
@@ -50,7 +51,8 @@ struct FileBrowserWindow: View {
 
         guard let data = windowManager.getFileBrowserData(for: windowId) else {
             logError("No window data found for ID: \(windowId)", category: .ui)
-            showMissingDataError = true
+            openWindow(id: WindowID.main)
+            dismiss()
             return
         }
 

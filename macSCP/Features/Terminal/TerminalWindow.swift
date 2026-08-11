@@ -51,7 +51,8 @@ struct TerminalWindow: View {
 
         guard let data = windowManager.getTerminalData(for: windowId) else {
             logError("No terminal window data found for ID: \(windowId)", category: .ui)
-            showMissingDataError = true
+            openWindow(id: WindowID.main)
+            dismiss()
             return
         }
 

@@ -12,6 +12,7 @@ struct FileInfoWindow: View {
     @State private var viewModel: FileInfoViewModel?
     @State private var showMissingDataError = false
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         Group {
@@ -49,7 +50,8 @@ struct FileInfoWindow: View {
 
         guard let data = windowManager.getFileInfoData(for: windowId) else {
             logError("No file info data found for ID: \(windowId)", category: .ui)
-            showMissingDataError = true
+            openWindow(id: WindowID.main)
+            dismiss()
             return
         }
 

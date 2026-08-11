@@ -18,7 +18,7 @@ struct MacSCPApp: App {
 
     var body: some Scene {
         // Main Window - Connection List
-        WindowGroup {
+        WindowGroup(id: WindowID.main) {
             ConnectionListView(viewModel: container.makeConnectionListViewModel())
                 .appLockOverlay()
                 .onAppear {
@@ -27,6 +27,7 @@ struct MacSCPApp: App {
         }
         .modelContainer(container.modelContainer)
         .defaultSize(WindowSize.main)
+        .restorationBehavior(.disabled)
         .commands {
             appCommands
         }
@@ -40,6 +41,7 @@ struct MacSCPApp: App {
         }
         .modelContainer(container.modelContainer)
         .defaultSize(WindowSize.fileBrowser)
+        .restorationBehavior(.disabled)
 
         // File Editor Window
         WindowGroup(id: WindowID.fileEditor, for: String.self) { $windowId in
@@ -50,6 +52,7 @@ struct MacSCPApp: App {
         }
         .modelContainer(container.modelContainer)
         .defaultSize(WindowSize.fileEditor)
+        .restorationBehavior(.disabled)
 
         // File Info Window
         WindowGroup(id: WindowID.fileInfo, for: String.self) { $windowId in
@@ -61,6 +64,7 @@ struct MacSCPApp: App {
         .modelContainer(container.modelContainer)
         .defaultSize(WindowSize.fileInfo)
         .windowResizability(.contentSize)
+        .restorationBehavior(.disabled)
 
         // Terminal Window
         WindowGroup(id: WindowID.terminal, for: String.self) { $windowId in
@@ -71,6 +75,7 @@ struct MacSCPApp: App {
         }
         .modelContainer(container.modelContainer)
         .defaultSize(WindowSize.terminal)
+        .restorationBehavior(.disabled)
 
         // Settings Window (Cmd+,)
         Settings {

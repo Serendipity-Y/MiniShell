@@ -14,6 +14,7 @@ struct FileEditorWindow: View {
     @State private var connectionError: AppError?
     @State private var showMissingDataError = false
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         Group {
@@ -63,7 +64,8 @@ struct FileEditorWindow: View {
 
         guard let data = windowManager.getFileEditorData(for: windowId) else {
             logError("No editor data found for ID: \(windowId)", category: .ui)
-            showMissingDataError = true
+            openWindow(id: WindowID.main)
+            dismiss()
             return
         }
 
