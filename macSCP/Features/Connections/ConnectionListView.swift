@@ -8,13 +8,16 @@
 import SwiftUI
 
 struct ConnectionListView: View {
-    @Bindable var viewModel: ConnectionListViewModel
+    /// The main window can be recomputed when its appearance preferences change.
+    /// Keep one list model for the lifetime of that window so its load task is
+    /// not cancelled and replaced while it is fetching saved connections.
+    @State private var viewModel: ConnectionListViewModel
     @Environment(\.openWindow) private var openWindow
     @State private var newFolderName = ""
     @State private var terminalWorkspace = TerminalWorkspaceViewModel()
 
     init(viewModel: ConnectionListViewModel) {
-        self.viewModel = viewModel
+        _viewModel = State(initialValue: viewModel)
     }
 
     @ViewBuilder
@@ -62,6 +65,8 @@ struct ConnectionListView: View {
     }
 
     var body: some View {
+        @Bindable var viewModel = viewModel
+
         NavigationSplitView {
             SidebarView(viewModel: viewModel)
                 .navigationSplitViewColumnWidth(min: 240, ideal: 300, max: 380)
