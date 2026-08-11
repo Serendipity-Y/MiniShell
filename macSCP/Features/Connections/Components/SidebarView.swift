@@ -15,38 +15,56 @@ struct SidebarView: View {
     @State private var isShowingRenameAlert = false
 
     var body: some View {
-        List(selection: $viewModel.selectedSidebarItem) {
-            Section {
+        List(selection: $viewModel.selectedConnectionId) {
+            Section("会话管理器") {
                 Label("会话管理器", systemImage: "rectangle.3.group")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(.secondary)
+                    .listRowSeparator(.hidden)
             }
 
-            // All Connections
-            NavigationLink(value: SidebarSelection.allConnections) {
-                Label {
-                    Text("全部连接")
-                } icon: {
-                    Image(systemName: "server.rack")
-                        .foregroundStyle(Color.accentColor)
+            Section {
+                Button {
+                    viewModel.selectedSidebarItem = .allConnections
+                    viewModel.selectedConnectionId = nil
+                } label: {
+                    Label {
+                        HStack {
+                            Text("全部连接")
+                            Spacer()
+                            Text("\(viewModel.totalConnectionCount)")
+                                .foregroundStyle(.secondary)
+                        }
+                    } icon: {
+                        Image(systemName: "server.rack")
+                            .foregroundStyle(Color.accentColor)
+                    }
                 }
-            }
-            .dropDestination(for: Connection.self) { connections, _ in
-                for connection in connections {
-                    Task { await viewModel.moveConnection(connection, to: nil) }
+                .buttonStyle(.plain)
+                .dropDestination(for: Connection.self) { connections, _ in
+                    for connection in connections {
+                        Task { await viewModel.moveConnection(connection, to: nil) }
+                    }
+                    return true
                 }
-                return true
+
+                connectionRows
+            } header: {
+                Text(listTitle)
             }
 
-            // Folders Section
             Section("文件夹") {
                 ForEach(viewModel.folders) { folder in
-                    NavigationLink(value: SidebarSelection.folder(folder.id)) {
+                    Button {
+                        viewModel.selectedSidebarItem = .folder(folder.id)
+                        viewModel.selectedConnectionId = nil
+                    } label: {
                         FolderRowView(
                             folder: folder,
                             connectionCount: viewModel.connectionCount(for: folder.id)
                         )
                     }
+                    .buttonStyle(.plain)
                     .dropDestination(for: Connection.self) { connections, _ in
                         for connection in connections {
                             Task { await viewModel.moveConnection(connection, to: folder) }
@@ -78,7 +96,14 @@ struct SidebarView: View {
         }
         .listStyle(.sidebar)
         .toolbar {
-            ToolbarItem(placement: .automatic) {
+            ToolbarItemGroup(placement: .primaryAction) {
+                Button {
+                    viewModel.isShowingNewConnectionSheet = true
+                } label: {
+                    Label("新建连接", systemImage: "square.and.pencil")
+                }
+                .help("新建连接")
+
                 Button {
                     viewModel.isShowingNewFolderSheet = true
                 } label: {
@@ -104,6 +129,81 @@ struct SidebarView: View {
             }
         } message: {
             Text("请输入文件夹的新名称。")
+        }
+    }
+
+    private var listTitle: String {
+        switch viewModel.selectedSidebarItem {
+        case .allConnections:
+            return "全部连接"
+        case .folder(let id):
+            return viewModel.folders.first { $0.id == id }?.name ?? "文件夹"
+        }
+    }
+
+    @ViewBuilder
+    private var connectionRows: some View {
+        switch viewModel.state {
+        case .idle, .loading:
+            HStack {
+                ProgressView()
+                Text("正在加载连接…")
+                    .foregroundStyle(.secondary)
+            }
+        case .success:
+            if viewModel.filteredConnections.isEmpty {
+                Text(viewModel.searchText.isEmpty ? "暂无连接" : "没有匹配的连接")
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach(viewModel.filteredConnections) { connection in
+                    ConnectionRowView(connection: connection)
+                        .draggable(connection)
+                        .contextMenu {
+                            connectionContextMenu(for: connection)
+                        }
+                        .tag(connection.id)
+                }
+            }
+        case .error(let error):
+            Text(error.localizedDescription)
+                .foregroundStyle(.red)
+        }
+    }
+
+    @ViewBuilder
+    private func connectionContextMenu(for connection: Connection) -> some View {
+        Button {
+            viewModel.connectToServer(connection)
+        } label: {
+            Label("打开文件传输", systemImage: "folder")
+        }
+
+        Button {
+            viewModel.requestTerminal(for: connection)
+        } label: {
+            Label("打开终端", systemImage: "terminal")
+        }
+
+        Divider()
+
+        Button {
+            viewModel.editConnection(connection)
+        } label: {
+            Label("编辑", systemImage: "pencil")
+        }
+
+        Button {
+            Task { await viewModel.duplicateConnection(connection) }
+        } label: {
+            Label("复制", systemImage: "plus.square.on.square")
+        }
+
+        Divider()
+
+        Button(role: .destructive) {
+            Task { await viewModel.deleteConnection(connection) }
+        } label: {
+            Label("删除", systemImage: "trash")
         }
     }
 }

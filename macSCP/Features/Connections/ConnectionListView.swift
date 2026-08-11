@@ -61,20 +61,12 @@ struct ConnectionListView: View {
             if isSessionSidebarVisible {
                 NavigationSplitView {
                     SidebarView(viewModel: viewModel)
-                        .navigationSplitViewColumnWidth(min: 180, ideal: 200, max: 260)
-                } content: {
-                    ConnectionListColumn(viewModel: viewModel)
-                        .navigationSplitViewColumnWidth(min: 220, ideal: 280, max: 400)
+                        .navigationSplitViewColumnWidth(min: 240, ideal: 300, max: 380)
                 } detail: {
                     detailColumn
                 }
             } else {
-                NavigationSplitView {
-                    ConnectionListColumn(viewModel: viewModel)
-                        .navigationSplitViewColumnWidth(min: 220, ideal: 280, max: 400)
-                } detail: {
-                    detailColumn
-                }
+                detailColumn
             }
         }
         .navigationTitle("")
@@ -93,9 +85,6 @@ struct ConnectionListView: View {
             }
         }
         .searchable(text: $viewModel.searchText, prompt: "搜索连接")
-        .onChange(of: viewModel.selectedSidebarItem) {
-            viewModel.selectedConnectionId = nil
-        }
         .task {
             await viewModel.loadData()
         }
