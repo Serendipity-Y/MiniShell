@@ -54,16 +54,17 @@ final class TerminalViewModel {
     // MARK: - Output handling
     private var outputTask: Task<Void, Never>?
     private var inputTask: Task<Void, Never>?
-    private var pendingOutputBuffer: [Data] = []
+    private var outputHistory: [Data] = []
+    private var outputHistorySize = 0
+    private let maximumOutputHistorySize = 1_048_576
 
     var onOutput: ((Data) -> Void)? {
         didSet {
-            // When callback is set, flush any buffered data
+            // Restore the terminal screen when this session becomes visible again.
             if let callback = onOutput {
-                for data in pendingOutputBuffer {
+                for data in outputHistory {
                     callback(data)
                 }
-                pendingOutputBuffer.removeAll()
             }
         }
     }
@@ -136,7 +137,8 @@ final class TerminalViewModel {
         outputTask = nil
         inputTask?.cancel()
         inputTask = nil
-        pendingOutputBuffer.removeAll()
+        outputHistory.removeAll()
+        outputHistorySize = 0
 
         await session.disconnect()
         isConnected = false
@@ -185,11 +187,9 @@ final class TerminalViewModel {
                 guard !Task.isCancelled else { break }
 
                 await MainActor.run {
-                    // Buffer data if callback not yet set, otherwise deliver immediately
+                    self.appendToOutputHistory(data)
                     if let callback = self.onOutput {
                         callback(data)
-                    } else {
-                        self.pendingOutputBuffer.append(data)
                     }
                 }
             }
@@ -206,6 +206,16 @@ final class TerminalViewModel {
                     }
                 }
             }
+        }
+    }
+
+    private func appendToOutputHistory(_ data: Data) {
+        outputHistory.append(data)
+        outputHistorySize += data.count
+
+        while outputHistorySize > maximumOutputHistorySize, let oldest = outputHistory.first {
+            outputHistorySize -= oldest.count
+            outputHistory.removeFirst()
         }
     }
 

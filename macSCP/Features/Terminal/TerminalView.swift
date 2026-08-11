@@ -354,6 +354,11 @@ struct SwiftTermView: NSViewRepresentable {
         }
     }
 
+    static func dismantleNSView(_ terminal: TerminalView, coordinator: Coordinator) {
+        coordinator.viewModel.onOutput = nil
+        coordinator.terminal = nil
+    }
+
     func makeCoordinator() -> Coordinator {
         Coordinator(viewModel: viewModel)
     }

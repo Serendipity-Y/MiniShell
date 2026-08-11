@@ -52,6 +52,11 @@ final class TerminalWorkspaceViewModel {
         }
     }
 
+    func selectTerminal(id: UUID) {
+        guard tabs.contains(where: { $0.id == id }) else { return }
+        selectedTabID = id
+    }
+
     func duplicateTerminal(id: UUID) {
         guard let tab = tabs.first(where: { $0.id == id }) else { return }
         openTerminal(with: tab.data)
@@ -61,6 +66,7 @@ final class TerminalWorkspaceViewModel {
 struct TerminalWorkspaceView: View {
     @Bindable var workspace: TerminalWorkspaceViewModel
     let onOpenSFTP: (TerminalWindowData) -> Void
+    @State private var hoveredTabID: UUID?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -68,19 +74,14 @@ struct TerminalWorkspaceView: View {
 
             Divider()
 
-            ZStack {
-                ForEach(workspace.tabs) { tab in
-                    TerminalContentView(
-                        viewModel: tab.viewModel,
-                        onOpenSFTP: { onOpenSFTP(tab.data) },
-                        disconnectOnDisappear: false,
-                        showsToolbar: false,
-                        isActive: tab.id == workspace.selectedTabID
-                    )
-                    .opacity(tab.id == workspace.selectedTabID ? 1 : 0)
-                    .allowsHitTesting(tab.id == workspace.selectedTabID)
-                    .zIndex(tab.id == workspace.selectedTabID ? 1 : 0)
-                }
+            if let selectedTab {
+                TerminalContentView(
+                    viewModel: selectedTab.viewModel,
+                    onOpenSFTP: { onOpenSFTP(selectedTab.data) },
+                    disconnectOnDisappear: false,
+                    showsToolbar: false,
+                    isActive: true
+                )
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -114,31 +115,44 @@ struct TerminalWorkspaceView: View {
         ScrollView(.horizontal) {
             HStack(spacing: 4) {
                 ForEach(workspace.tabs) { tab in
-                    HStack(spacing: 6) {
-                        Circle()
-                            .fill(statusColor(for: tab.viewModel))
-                            .frame(width: 7, height: 7)
+                    ZStack(alignment: .trailing) {
+                        Button {
+                            workspace.selectTerminal(id: tab.id)
+                        } label: {
+                            HStack(spacing: 6) {
+                                Circle()
+                                    .fill(statusColor(for: tab.viewModel))
+                                    .frame(width: 7, height: 7)
 
-                        Text(tab.title)
-                            .lineLimit(1)
+                                Text(tab.title)
+                                    .lineLimit(1)
+
+                                Spacer(minLength: 18)
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 7)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
 
                         Button {
                             workspace.closeTerminal(id: tab.id)
                         } label: {
                             Image(systemName: "xmark")
                                 .font(.system(size: 10, weight: .semibold))
+                                .frame(width: 22, height: 22)
                         }
                         .buttonStyle(.plain)
                         .help("关闭终端")
+                        .padding(.trailing, 4)
                     }
                     .font(.system(size: 13, weight: .medium))
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 7)
-                    .background(tab.id == workspace.selectedTabID ? Color.accentColor.opacity(0.16) : .clear, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .background(tabBackground(for: tab), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
                     .contentShape(Rectangle())
-                    .onTapGesture {
-                        workspace.selectedTabID = tab.id
+                    .onHover { isHovering in
+                        hoveredTabID = isHovering ? tab.id : (hoveredTabID == tab.id ? nil : hoveredTabID)
                     }
+                    .animation(.easeOut(duration: 0.12), value: hoveredTabID)
                     .contextMenu {
                         Button {
                             workspace.duplicateTerminal(id: tab.id)
@@ -172,6 +186,16 @@ struct TerminalWorkspaceView: View {
         case .disconnected, .error:
             return .secondary
         }
+    }
+
+    private func tabBackground(for tab: TerminalTab) -> Color {
+        if tab.id == workspace.selectedTabID {
+            return Color.accentColor.opacity(0.16)
+        }
+        if tab.id == hoveredTabID {
+            return Color.primary.opacity(0.10)
+        }
+        return .clear
     }
 
     private var selectedTab: TerminalTab? {
