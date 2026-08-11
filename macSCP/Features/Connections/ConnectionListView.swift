@@ -11,7 +11,6 @@ struct ConnectionListView: View {
     @Bindable var viewModel: ConnectionListViewModel
     @Environment(\.openWindow) private var openWindow
     @State private var newFolderName = ""
-    @State private var isSessionSidebarVisible = true
     @State private var terminalWorkspace = TerminalWorkspaceViewModel()
 
     init(viewModel: ConnectionListViewModel) {
@@ -63,33 +62,14 @@ struct ConnectionListView: View {
     }
 
     var body: some View {
-        Group {
-            if isSessionSidebarVisible {
-                NavigationSplitView {
-                    SidebarView(viewModel: viewModel)
-                        .navigationSplitViewColumnWidth(min: 240, ideal: 300, max: 380)
-                } detail: {
-                    detailColumn
-                }
-            } else {
-                detailColumn
-            }
+        NavigationSplitView {
+            SidebarView(viewModel: viewModel)
+                .navigationSplitViewColumnWidth(min: 240, ideal: 300, max: 380)
+        } detail: {
+            detailColumn
         }
         .navigationTitle("")
         .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
-        .toolbar {
-            ToolbarItem(placement: .navigation) {
-                Button {
-                    isSessionSidebarVisible.toggle()
-                } label: {
-                    Label(
-                        isSessionSidebarVisible ? "隐藏会话栏" : "显示会话栏",
-                        systemImage: "sidebar.leading"
-                    )
-                }
-                .help(isSessionSidebarVisible ? "隐藏会话栏" : "显示会话栏")
-            }
-        }
         .searchable(text: $viewModel.searchText, prompt: "搜索连接")
         .task {
             await viewModel.loadData()
