@@ -16,10 +16,16 @@ struct SidebarView: View {
 
     var body: some View {
         List(selection: $viewModel.selectedSidebarItem) {
+            Section {
+                Label("会话管理器", systemImage: "rectangle.3.group")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.secondary)
+            }
+
             // All Connections
             NavigationLink(value: SidebarSelection.allConnections) {
                 Label {
-                    Text("All Connections")
+                    Text("全部连接")
                 } icon: {
                     Image(systemName: "server.rack")
                         .foregroundStyle(Color.accentColor)
@@ -33,7 +39,7 @@ struct SidebarView: View {
             }
 
             // Folders Section
-            Section("Folders") {
+            Section("文件夹") {
                 ForEach(viewModel.folders) { folder in
                     NavigationLink(value: SidebarSelection.folder(folder.id)) {
                         FolderRowView(
@@ -53,7 +59,7 @@ struct SidebarView: View {
                             renameText = folder.name
                             isShowingRenameAlert = true
                         } label: {
-                            Label("Rename", systemImage: "pencil")
+                            Label("重命名", systemImage: "pencil")
                         }
 
                         Divider()
@@ -61,7 +67,7 @@ struct SidebarView: View {
                         Button(role: .destructive) {
                             viewModel.confirmDeleteFolder(folder)
                         } label: {
-                            Label("Delete", systemImage: "trash")
+                            Label("删除", systemImage: "trash")
                         }
                     }
                 }
@@ -76,14 +82,14 @@ struct SidebarView: View {
                 Button {
                     viewModel.isShowingNewFolderSheet = true
                 } label: {
-                    Label("New Folder", systemImage: "folder.badge.plus")
+                    Label("新建文件夹", systemImage: "folder.badge.plus")
                 }
-                .help("New Folder")
+                .help("新建文件夹")
             }
         }
-        .alert("Rename Folder", isPresented: $isShowingRenameAlert) {
-            TextField("Folder name", text: $renameText)
-            Button("Rename") {
+        .alert("重命名文件夹", isPresented: $isShowingRenameAlert) {
+            TextField("文件夹名称", text: $renameText)
+            Button("重命名") {
                 let name = renameText.trimmed
                 if !name.isEmpty, let folder = folderToRename {
                     Task { await viewModel.renameFolder(folder, to: name) }
@@ -92,12 +98,12 @@ struct SidebarView: View {
                 renameText = ""
             }
             .keyboardShortcut(.defaultAction)
-            Button("Cancel", role: .cancel) {
+            Button("取消", role: .cancel) {
                 folderToRename = nil
                 renameText = ""
             }
         } message: {
-            Text("Enter a new name for the folder.")
+            Text("请输入文件夹的新名称。")
         }
     }
 }

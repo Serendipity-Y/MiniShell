@@ -21,6 +21,9 @@ struct MacSCPApp: App {
         WindowGroup {
             ConnectionListView(viewModel: container.makeConnectionListViewModel())
                 .appLockOverlay()
+                .onAppear {
+                    Self.localizeSystemMenuTitles()
+                }
         }
         .modelContainer(container.modelContainer)
         .defaultSize(WindowSize.main)
@@ -76,30 +79,46 @@ struct MacSCPApp: App {
         }
     }
 
+    @MainActor
+    private static func localizeSystemMenuTitles() {
+        let translations = [
+            "File": "文件",
+            "Edit": "编辑",
+            "View": "视图",
+            "Window": "窗口",
+            "Help": "帮助"
+        ]
+        for item in NSApp.mainMenu?.items ?? [] {
+            if let title = translations[item.title] {
+                item.title = title
+            }
+        }
+    }
+
     // MARK: - Commands
     @CommandsBuilder
     private var appCommands: some Commands {
         CommandGroup(replacing: .newItem) {
-            Button("New Connection") {
+            Button("新建连接") {
                 // Handled by main window
             }
             .keyboardShortcut("n", modifiers: .command)
 
-            Button("New Folder") {
+            Button("新建文件夹") {
                 // Handled by main window
             }
             .keyboardShortcut("n", modifiers: [.command, .shift])
         }
 
         CommandGroup(after: .toolbar) {
-            Button("Refresh") {
+            Button("刷新") {
                 // Handled by active window
             }
             .keyboardShortcut("r", modifiers: .command)
         }
 
         CommandGroup(replacing: .help) {
-            Button("Report a Bug…") {
+            Button("报告问题…") {
                 if let url = URL(string: "https://github.com/macnev2013/macSCP/issues") {
                     NSWorkspace.shared.open(url)
                 }

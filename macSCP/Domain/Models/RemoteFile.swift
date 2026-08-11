@@ -215,9 +215,9 @@ extension RemoteFile {
     }
 
     enum SortCriteria: String, CaseIterable, Sendable {
-        case name = "Name"
-        case size = "Size"
-        case date = "Date Modified"
-        case type = "Type"
+        case name = "名称"
+        case size = "大小"
+        case date = "修改时间"
+        case type = "类型"
     }
 }

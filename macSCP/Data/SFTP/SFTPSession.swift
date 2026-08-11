@@ -415,9 +415,6 @@ actor SFTPSession: SFTPSessionProtocol {
             progress?(0)
 
             try await client.withSFTP { sftp in
-                // Remove existing file if present
-                try? await sftp.remove(at: remotePath)
-
                 try await sftp.withFile(filePath: remotePath, flags: [.write, .create, .truncate]) { file in
                     var offset: UInt64 = 0
 

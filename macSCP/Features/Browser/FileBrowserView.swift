@@ -10,6 +10,7 @@ import SwiftUI
 struct FileBrowserView: View {
     @Bindable var viewModel: FileBrowserViewModel
     @Environment(\.openWindow) private var openWindow
+    @State private var localViewModel = LocalFileBrowserViewModel()
 
     init(viewModel: FileBrowserViewModel) {
         self.viewModel = viewModel
@@ -17,24 +18,22 @@ struct FileBrowserView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Breadcrumb path bar
-            BreadcrumbView(
-                components: viewModel.pathComponents,
-                onNavigate: { path in
-                    Task {
-                        await viewModel.navigateTo(path)
-                    }
-                }
-            )
+            connectionBar
+
+            HSplitView {
+                localPane
+                    .frame(minWidth: 360, maxWidth: .infinity)
+
+                remotePane
+                    .frame(minWidth: 360, maxWidth: .infinity)
+            }
 
             Divider()
 
-            // Content
-            contentView
+            TransferQueueView(viewModel: viewModel)
 
             Divider()
 
-            // Status Bar
             statusBar
         }
         .frame(minWidth: WindowSize.minFileBrowser.width, minHeight: WindowSize.minFileBrowser.height)
@@ -49,7 +48,7 @@ struct FileBrowserView: View {
                     Image(systemName: "chevron.left")
                 }
                 .disabled(!viewModel.canGoBack)
-                .help("Go Back")
+                .help("返回")
             }
 
             ToolbarItem(id: "forward", placement: .navigation) {
@@ -59,7 +58,7 @@ struct FileBrowserView: View {
                     Image(systemName: "chevron.right")
                 }
                 .disabled(!viewModel.canGoForward)
-                .help("Go Forward")
+                .help("前进")
             }
 
             // Primary actions
@@ -68,54 +67,51 @@ struct FileBrowserView: View {
                     Button {
                         viewModel.isShowingNewFolderSheet = true
                     } label: {
-                        Label("New Folder", systemImage: "folder.badge.plus")
+                        Label("新建文件夹", systemImage: "folder.badge.plus")
                     }
 
                     Button {
                         viewModel.isShowingNewFileSheet = true
                     } label: {
-                        Label("New File", systemImage: "doc.badge.plus")
+                        Label("新建文件", systemImage: "doc.badge.plus")
                     }
                 } label: {
-                    Label("New", systemImage: "plus")
+                    Label("新建", systemImage: "plus")
                 }
-                .help("New File or Folder")
+                .help("新建文件或文件夹")
             }
 
             ToolbarItem(id: "upload", placement: .primaryAction) {
                 Button {
                     Task { await viewModel.uploadFiles() }
                 } label: {
-                    Label("Upload", systemImage: "square.and.arrow.up")
+                    Label("上传", systemImage: "square.and.arrow.up")
                 }
-                .help("Upload Files")
+                .help("上传文件")
             }
 
             ToolbarItem(id: "delete", placement: .primaryAction) {
                 Button {
                     viewModel.confirmDeleteSelected()
                 } label: {
-                    Label("Delete", systemImage: "trash")
+                    Label("删除", systemImage: "trash")
                 }
                 .disabled(viewModel.selectedFiles.isEmpty)
-                .help("Delete Selected")
+                .help("删除所选项目")
             }
 
             ToolbarItem(id: "spacer1", placement: .primaryAction) {
                 Spacer()
             }
 
-            // Terminal button (SFTP only)
             ToolbarItem(id: "terminal", placement: .primaryAction) {
-                if viewModel.connection.connectionType == .sftp {
-                    Button {
-                        viewModel.openTerminal()
-                    } label: {
-                        Label("Terminal", systemImage: "terminal")
-                    }
-                    .disabled(!viewModel.isConnected)
-                    .help("Open Terminal")
+                Button {
+                    viewModel.openTerminal()
+                } label: {
+                    Label("终端", systemImage: "terminal")
                 }
+                .disabled(!viewModel.isConnected)
+                .help("打开终端")
             }
 
             // Transfers
@@ -127,11 +123,11 @@ struct FileBrowserView: View {
             ToolbarItem(id: "hiddenFiles", placement: .primaryAction) {
                 Toggle(isOn: $viewModel.showHiddenFiles) {
                     Label(
-                        viewModel.showHiddenFiles ? "Hide Hidden Files" : "Show Hidden Files",
+                        viewModel.showHiddenFiles ? "隐藏隐藏文件" : "显示隐藏文件",
                         systemImage: viewModel.showHiddenFiles ? "eye.fill" : "eye.slash"
                     )
                 }
-                .help("Toggle Hidden Files")
+                .help("显示或隐藏隐藏文件")
             }
 
             ToolbarItem(id: "sort", placement: .primaryAction) {
@@ -154,9 +150,9 @@ struct FileBrowserView: View {
                         }
                     }
                 } label: {
-                    Label("Sort", systemImage: "arrow.up.arrow.down")
+                    Label("排序", systemImage: "arrow.up.arrow.down")
                 }
-                .help("Sort Options")
+                .help("排序选项")
             }
         }
         .task {
@@ -202,16 +198,16 @@ struct FileBrowserView: View {
                 )
             }
         }
-        .alert("Delete Files", isPresented: $viewModel.isShowingDeleteConfirmation) {
-            Button("Cancel", role: .cancel) {}
-            Button("Delete", role: .destructive) {
+        .alert("删除文件", isPresented: $viewModel.isShowingDeleteConfirmation) {
+            Button("取消", role: .cancel) {}
+            Button("删除", role: .destructive) {
                 Task {
                     await viewModel.deleteFiles(viewModel.filesToDelete)
                 }
             }
         } message: {
             let count = viewModel.filesToDelete.count
-            Text("Are you sure you want to delete \(count) item\(count == 1 ? "" : "s")? This cannot be undone.")
+            Text("确定要删除 \(count) 个项目吗？此操作无法撤销。")
         }
         .errorAlert($viewModel.error)
         .onDisappear {
@@ -239,25 +235,79 @@ struct FileBrowserView: View {
         }
     }
 
-    @ViewBuilder
-    private var contentView: some View {
-        switch viewModel.state {
-        case .idle, .loading:
-            LoadingView(message: viewModel.isConnected ? "Loading..." : "Connecting...")
+    private var connectionBar: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "lock.shield")
+                .foregroundStyle(viewModel.isConnected ? .green : .secondary)
+            Text("SFTP")
+                .font(.system(size: 12, weight: .semibold))
+            Text(viewModel.connection.connectionString)
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+            Spacer()
+            Text(viewModel.isConnected ? "已连接" : "正在连接")
+                .font(.system(size: 11))
+                .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 12)
+        .frame(height: 32)
+        .background(.bar)
+    }
 
-        case .success:
-            FileListView(
-                viewModel: viewModel,
-                onGetInfo: showFileInfo
+    private var localPane: some View {
+        VStack(spacing: 0) {
+            FilePaneToolbar(
+                title: "本机",
+                path: localViewModel.pathDisplayName,
+                canGoBack: localViewModel.canGoBack,
+                canGoForward: localViewModel.canGoForward,
+                canGoUp: localViewModel.canGoUp,
+                onBack: { localViewModel.goBack() },
+                onForward: { localViewModel.goForward() },
+                onUp: { localViewModel.goUp() },
+                onRefresh: { localViewModel.loadFiles() }
+            )
+            NativeLocalFileTableView(viewModel: localViewModel)
+        }
+        .errorAlert($localViewModel.error)
+    }
+
+    private var remotePane: some View {
+        VStack(spacing: 0) {
+            FilePaneToolbar(
+                title: "远端",
+                path: viewModel.currentPath,
+                canGoBack: viewModel.canGoBack,
+                canGoForward: viewModel.canGoForward,
+                canGoUp: viewModel.canGoUp,
+                onBack: { Task { await viewModel.goBack() } },
+                onForward: { Task { await viewModel.goForward() } },
+                onUp: { Task { await viewModel.goUp() } },
+                onRefresh: { Task { await viewModel.refresh() } }
             )
 
-        case .error(let error):
-            ErrorView(error: error) {
-                Task {
-                    if viewModel.isConnected {
-                        await viewModel.refresh()
-                    } else {
-                        await viewModel.connect()
+            switch viewModel.state {
+            case .idle, .loading:
+                LoadingView(message: viewModel.isConnected ? "正在读取远端目录…" : "正在连接 SFTP…")
+            case .success:
+                NativeFileTableView(
+                    viewModel: viewModel,
+                    onDoubleClick: { file in
+                        guard file.isDirectory else { return }
+                        Task { await viewModel.navigateTo(file.path) }
+                    },
+                    onGetInfo: showFileInfo,
+                    onOpenEditor: nil
+                )
+            case .error(let error):
+                ErrorView(error: error) {
+                    Task {
+                        if viewModel.isConnected {
+                            await viewModel.refresh()
+                        } else {
+                            await viewModel.connect()
+                        }
                     }
                 }
             }
@@ -293,12 +343,12 @@ struct FileBrowserView: View {
 
             // File count
             HStack(spacing: 6) {
-                Text("\(viewModel.sortedFiles.count) items")
+                Text("\(viewModel.sortedFiles.count) 个项目")
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
 
                 if !viewModel.selectedFiles.isEmpty {
-                    Text("\(viewModel.selectedFiles.count) selected")
+                    Text("已选择 \(viewModel.selectedFiles.count) 个")
                         .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(.secondary)
                 }
@@ -311,6 +361,60 @@ struct FileBrowserView: View {
 
     private func showFileInfo(_ file: RemoteFile) {
         viewModel.showFileInfo(file)
+    }
+}
+
+private struct FilePaneToolbar: View {
+    let title: String
+    let path: String
+    let canGoBack: Bool
+    let canGoForward: Bool
+    let canGoUp: Bool
+    let onBack: () -> Void
+    let onForward: () -> Void
+    let onUp: () -> Void
+    let onRefresh: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 8) {
+                Text(title)
+                    .font(.system(size: 12, weight: .semibold))
+                Spacer()
+                Button(action: onBack) { Image(systemName: "chevron.left") }
+                    .buttonStyle(.plain)
+                    .disabled(!canGoBack)
+                    .help("返回")
+                Button(action: onForward) { Image(systemName: "chevron.right") }
+                    .buttonStyle(.plain)
+                    .disabled(!canGoForward)
+                    .help("前进")
+                Button(action: onUp) { Image(systemName: "arrow.up") }
+                    .buttonStyle(.plain)
+                    .disabled(!canGoUp)
+                    .help("上级目录")
+                Button(action: onRefresh) { Image(systemName: "arrow.clockwise") }
+                    .buttonStyle(.plain)
+                    .help("刷新")
+            }
+            .padding(.horizontal, 10)
+            .frame(height: 28)
+            .background(.bar)
+
+            HStack(spacing: 7) {
+                Image(systemName: "folder")
+                    .foregroundStyle(.secondary)
+                Text(path)
+                    .font(.system(size: 12, design: .monospaced))
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                Spacer()
+            }
+            .padding(.horizontal, 10)
+            .frame(height: 30)
+            .background(Color(nsColor: .controlBackgroundColor))
+            Divider()
+        }
     }
 }
 

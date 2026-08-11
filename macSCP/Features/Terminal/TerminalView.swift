@@ -13,6 +13,7 @@ import SwiftTerm
 
 struct TerminalContentView: View {
     @Bindable var viewModel: TerminalViewModel
+    let onOpenSFTP: () -> Void
 
     @State private var showConnectionLostBanner = false
     @State private var showSessionEndedBanner = false
@@ -31,16 +32,23 @@ struct TerminalContentView: View {
         .navigationTitle(viewModel.connectionName)
         .navigationSubtitle(navigationSubtitleText)
         .toolbar(id: "terminalToolbar") {
+            ToolbarItem(id: "sftp", placement: .primaryAction) {
+                Button(action: onOpenSFTP) {
+                    Label("SFTP 文件传输", systemImage: "folder.badge.gearshape")
+                }
+                .help("打开本机与远端双栏文件传输")
+            }
+
             ToolbarItem(id: "reconnect", placement: .primaryAction) {
                 Button {
                     Task {
                         await viewModel.reconnect()
                     }
                 } label: {
-                    Label("Reconnect", systemImage: "arrow.clockwise")
+                    Label("重新连接", systemImage: "arrow.clockwise")
                 }
                 .disabled(viewModel.state == .connecting)
-                .help("Reconnect")
+                .help("重新连接")
             }
 
 
@@ -122,16 +130,16 @@ struct TerminalContentView: View {
                 }
             } else {
                 ContentUnavailableView {
-                    Label("Disconnected", systemImage: "terminal")
+                    Label("连接已断开", systemImage: "terminal")
                 } description: {
-                    Text("The terminal session is not connected.")
+                    Text("终端会话尚未连接。")
                 } actions: {
                     Button {
                         Task {
                             await viewModel.reconnect()
                         }
                     } label: {
-                        Text("Connect")
+                        Text("连接")
                     }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.regular)
@@ -139,7 +147,7 @@ struct TerminalContentView: View {
             }
 
         case .connecting:
-            LoadingView(message: "Connecting...")
+            LoadingView(message: "正在连接…")
 
         case .connected:
             SwiftTermView(viewModel: viewModel)
@@ -157,7 +165,7 @@ struct TerminalContentView: View {
             } else {
                 // Initial connection error — no terminal to preserve
                 ContentUnavailableView {
-                    Label("Connection Failed", systemImage: "wifi.exclamationmark")
+                    Label("连接失败", systemImage: "wifi.exclamationmark")
                 } description: {
                     if case .error(let error) = viewModel.state {
                         Text(error.localizedDescription)
@@ -168,7 +176,7 @@ struct TerminalContentView: View {
                             await viewModel.reconnect()
                         }
                     } label: {
-                        Text("Try Again")
+                        Text("重试")
                     }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.regular)
@@ -183,10 +191,10 @@ struct TerminalContentView: View {
                 .font(.system(size: 28, weight: .medium))
                 .foregroundStyle(.secondary)
 
-            Text("Session Ended")
+            Text("会话已结束")
                 .font(.system(size: 15, weight: .semibold))
 
-            Text("The remote shell has exited.")
+            Text("远端 Shell 已退出。")
                 .font(.system(size: 12))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -197,7 +205,7 @@ struct TerminalContentView: View {
                     await viewModel.reconnect()
                 }
             } label: {
-                Label("Reconnect", systemImage: "arrow.clockwise")
+                Label("重新连接", systemImage: "arrow.clockwise")
                     .font(.system(size: 13, weight: .medium))
             }
             .buttonStyle(.borderedProminent)
@@ -217,7 +225,7 @@ struct TerminalContentView: View {
                 .font(.system(size: 28, weight: .medium))
                 .foregroundStyle(.secondary)
 
-            Text("Connection Lost")
+            Text("连接已丢失")
                 .font(.system(size: 15, weight: .semibold))
 
             if case .error(let error) = viewModel.state {
@@ -233,7 +241,7 @@ struct TerminalContentView: View {
                     await viewModel.reconnect()
                 }
             } label: {
-                Label("Reconnect", systemImage: "arrow.clockwise")
+                Label("重新连接", systemImage: "arrow.clockwise")
                     .font(.system(size: 13, weight: .medium))
             }
             .buttonStyle(.borderedProminent)
@@ -266,11 +274,11 @@ struct TerminalContentView: View {
         case .connected:
             return viewModel.connectionString
         case .connecting:
-            return "Connecting..."
+            return "正在连接…"
         case .disconnected:
-            return showSessionEndedBanner ? "Session Ended" : "Disconnected"
+            return showSessionEndedBanner ? "会话已结束" : "连接已断开"
         case .error:
-            return "Connection Error"
+            return "连接错误"
         }
     }
 
@@ -278,13 +286,13 @@ struct TerminalContentView: View {
     private var statusBarText: String {
         switch viewModel.state {
         case .connected:
-            return "Connected"
+            return "已连接"
         case .connecting:
-            return "Connecting..."
+            return "正在连接…"
         case .disconnected:
-            return showSessionEndedBanner ? "Session Ended" : "Disconnected"
+            return showSessionEndedBanner ? "会话已结束" : "连接已断开"
         case .error:
-            return "Connection Lost"
+            return "连接已丢失"
         }
     }
 }
@@ -373,6 +381,7 @@ struct SwiftTermView: NSViewRepresentable {
                 authMethod: .password,
                 privateKeyPath: nil
             )
-        )
+        ),
+        onOpenSFTP: {}
     )
 }

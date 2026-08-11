@@ -53,6 +53,7 @@ final class TerminalViewModel {
 
     // MARK: - Output handling
     private var outputTask: Task<Void, Never>?
+    private var inputTask: Task<Void, Never>?
     private var pendingOutputBuffer: [Data] = []
 
     var onOutput: ((Data) -> Void)? {
@@ -133,6 +134,8 @@ final class TerminalViewModel {
     func disconnect() async {
         outputTask?.cancel()
         outputTask = nil
+        inputTask?.cancel()
+        inputTask = nil
         pendingOutputBuffer.removeAll()
 
         await session.disconnect()
@@ -152,10 +155,15 @@ final class TerminalViewModel {
     func sendInput(_ data: Data) {
         guard isConnected else { return }
 
-        Task {
+        let previousInputTask = inputTask
+        inputTask = Task { [weak self] in
+            await previousInputTask?.value
+            guard !Task.isCancelled, let self, self.isConnected else { return }
+
             do {
                 try await session.send(data)
             } catch {
+                guard !Task.isCancelled else { return }
                 logError("Failed to send terminal input: \(error)", category: .network)
                 self.error = AppError.from(error)
             }

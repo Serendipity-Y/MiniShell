@@ -10,8 +10,10 @@ import SwiftUI
 struct TerminalWindow: View {
     let windowId: String
     @State private var viewModel: TerminalViewModel?
+    @State private var terminalData: TerminalWindowData?
     @State private var showMissingDataError = false
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         Group {
@@ -20,21 +22,21 @@ struct TerminalWindow: View {
                     Image(systemName: "exclamationmark.triangle")
                         .font(.largeTitle)
                         .foregroundStyle(.orange)
-                    Text("Session Expired")
+                    Text("会话已失效")
                         .font(.headline)
-                    Text("This window's session data was lost. Please reconnect from the main window.")
+                    Text("此窗口的会话数据已丢失，请从主窗口重新连接。")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
-                    Button("Close Window") {
+                    Button("关闭窗口") {
                         dismiss()
                     }
                 }
                 .padding(32)
             } else if let viewModel = viewModel {
-                TerminalContentView(viewModel: viewModel)
+                TerminalContentView(viewModel: viewModel, onOpenSFTP: openSFTPWorkspace)
             } else {
-                LoadingView(message: "Initializing...")
+                LoadingView(message: "正在初始化…")
                     .task {
                         initializeViewModel()
                     }
@@ -61,6 +63,24 @@ struct TerminalWindow: View {
             session: session,
             connectionData: data
         )
+        terminalData = data
+    }
+
+    @MainActor
+    private func openSFTPWorkspace() {
+        guard let data = terminalData else { return }
+        let browserData = FileBrowserWindowData(
+            connectionId: data.connectionId,
+            connectionName: data.connectionName,
+            host: data.host,
+            port: data.port,
+            username: data.username,
+            password: data.password,
+            authMethod: data.authMethod,
+            privateKeyPath: data.privateKeyPath
+        )
+        let browserWindowId = WindowManager.shared.storeFileBrowserData(browserData)
+        openWindow(id: WindowID.fileBrowser, value: browserWindowId)
     }
 }
 
