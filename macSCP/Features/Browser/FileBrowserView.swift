@@ -30,10 +30,6 @@ struct FileBrowserView: View {
 
             Divider()
 
-            TransferQueueView(viewModel: viewModel)
-
-            Divider()
-
             statusBar
         }
         .frame(minWidth: WindowSize.minFileBrowser.width, minHeight: WindowSize.minFileBrowser.height)
