@@ -21,21 +21,9 @@ struct ConnectionRowView: View {
 
             // Text content
             VStack(alignment: .leading, spacing: 2) {
-                // Name row with trailing type badge
-                HStack {
-                    Text(connection.name)
-                        .font(.system(size: 13, weight: .semibold))
-                        .lineLimit(1)
-
-                    Spacer()
-
-                    Text("SSH / SFTP 连接")
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(.quaternary, in: Capsule())
-                }
+                Text(connection.name)
+                    .font(.system(size: 13, weight: .semibold))
+                    .lineLimit(1)
 
                 // Connection string
                 Text(connection.connectionString)
