@@ -18,11 +18,11 @@ struct AppLockView: View {
                 .font(.system(size: 48))
                 .foregroundStyle(.secondary)
 
-            Text("macSCP is Locked")
+            Text("MiniShell 已锁定")
                 .font(.title2)
                 .fontWeight(.semibold)
 
-            Text("Authenticate to continue")
+            Text("请完成验证以继续")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
@@ -37,7 +37,7 @@ struct AppLockView: View {
             Button {
                 appLockManager.unlock()
             } label: {
-                Label("Unlock with Touch ID", systemImage: "touchid")
+                Label("使用触控 ID 解锁", systemImage: "touchid")
                     .frame(minWidth: 200)
             }
             .controlSize(.large)

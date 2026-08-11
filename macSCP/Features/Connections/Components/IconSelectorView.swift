@@ -18,7 +18,7 @@ struct IconSelectorView: View {
             HStack {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(.secondary)
-                TextField("Search icons...", text: $searchText)
+                TextField("搜索图标…", text: $searchText)
                     .textFieldStyle(.plain)
                 if !searchText.isEmpty {
                     Button {
@@ -78,7 +78,7 @@ struct IconSelectorView: View {
 
             // Selected icon preview
             HStack {
-                Text("Selected:")
+                Text("已选择：")
                     .foregroundStyle(.secondary)
                 Image(systemName: selectedIcon)
                     .font(.system(size: 20))
@@ -178,14 +178,14 @@ enum IconCategory: CaseIterable {
 
     var displayName: String {
         switch self {
-        case .servers: return "Servers"
-        case .devices: return "Devices"
-        case .network: return "Network"
-        case .cloud: return "Cloud"
-        case .storage: return "Storage"
-        case .security: return "Security"
-        case .development: return "Dev"
-        case .misc: return "Misc"
+        case .servers: return "服务器"
+        case .devices: return "设备"
+        case .network: return "网络"
+        case .cloud: return "云端"
+        case .storage: return "存储"
+        case .security: return "安全"
+        case .development: return "开发"
+        case .misc: return "其他"
         }
     }
 

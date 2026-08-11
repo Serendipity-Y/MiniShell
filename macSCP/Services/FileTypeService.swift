@@ -75,87 +75,87 @@ enum FileTypeService {
     /// Returns a human-readable description of the file type (Finder style)
     static func typeDescription(for file: RemoteFile) -> String {
         if file.isDirectory {
-            return "Folder"
+            return "文件夹"
         }
 
         if file.isSymlink {
-            return "Alias"
+            return "别名"
         }
 
         // Check for specific extensions first
         switch file.fileExtension.lowercased() {
         case "swift":
-            return "Swift Source"
+            return "Swift 源代码"
         case "js":
-            return "JavaScript"
+            return "JavaScript 文件"
         case "ts":
-            return "TypeScript"
+            return "TypeScript 文件"
         case "py":
-            return "Python Script"
+            return "Python 脚本"
         case "rb":
-            return "Ruby Script"
+            return "Ruby 脚本"
         case "go":
-            return "Go Source"
+            return "Go 源代码"
         case "rs":
-            return "Rust Source"
+            return "Rust 源代码"
         case "java":
-            return "Java Source"
+            return "Java 源代码"
         case "c":
-            return "C Source"
+            return "C 源代码"
         case "cpp", "cc":
-            return "C++ Source"
+            return "C++ 源代码"
         case "h":
-            return "C Header"
+            return "C 头文件"
         case "hpp":
-            return "C++ Header"
+            return "C++ 头文件"
         case "m":
-            return "Objective-C Source"
+            return "Objective-C 源代码"
         case "html", "htm":
-            return "HTML Document"
+            return "HTML 文档"
         case "css":
-            return "CSS Stylesheet"
+            return "CSS 样式表"
         case "json":
             return "JSON"
         case "xml":
-            return "XML Document"
+            return "XML 文档"
         case "yaml", "yml":
-            return "YAML Document"
+            return "YAML 文档"
         case "md", "markdown":
-            return "Markdown Document"
+            return "Markdown 文档"
         case "txt":
-            return "Plain Text"
+            return "纯文本"
         case "pdf":
-            return "PDF Document"
+            return "PDF 文档"
         case "png":
-            return "PNG Image"
+            return "PNG 图像"
         case "jpg", "jpeg":
-            return "JPEG Image"
+            return "JPEG 图像"
         case "gif":
-            return "GIF Image"
+            return "GIF 图像"
         case "svg":
-            return "SVG Image"
+            return "SVG 图像"
         case "mp4":
-            return "MPEG-4 Movie"
+            return "MPEG-4 视频"
         case "mov":
-            return "QuickTime Movie"
+            return "QuickTime 视频"
         case "mp3":
-            return "MP3 Audio"
+            return "MP3 音频"
         case "wav":
-            return "WAV Audio"
+            return "WAV 音频"
         case "zip":
-            return "ZIP Archive"
+            return "ZIP 压缩包"
         case "tar":
-            return "TAR Archive"
+            return "TAR 压缩包"
         case "gz", "gzip":
-            return "Gzip Archive"
+            return "Gzip 压缩包"
         case "dmg":
-            return "Disk Image"
+            return "磁盘映像"
         case "app":
-            return "Application"
+            return "应用程序"
         case "xcodeproj":
-            return "Xcode Project"
+            return "Xcode 项目"
         case "xcworkspace":
-            return "Xcode Workspace"
+            return "Xcode 工作区"
         default:
             break
         }
@@ -163,36 +163,36 @@ enum FileTypeService {
         // Fallback to general type
         switch file.fileType {
         case .directory:
-            return "Folder"
+            return "文件夹"
         case .text:
-            return "Plain Text"
+            return "纯文本"
         case .code:
-            return "Source Code"
+            return "源代码"
         case .image:
-            return "Image"
+            return "图像"
         case .video:
-            return "Movie"
+            return "视频"
         case .audio:
-            return "Audio"
+            return "音频"
         case .archive:
-            return "Archive"
+            return "压缩包"
         case .document:
-            return "Document"
+            return "文档"
         case .spreadsheet:
-            return "Spreadsheet"
+            return "电子表格"
         case .presentation:
-            return "Presentation"
+            return "演示文稿"
         case .pdf:
-            return "PDF Document"
+            return "PDF 文档"
         case .executable:
-            return "Unix Executable"
+            return "Unix 可执行文件"
         case .configuration:
-            return "Configuration"
+            return "配置文件"
         case .unknown:
             if file.fileExtension.isEmpty {
-                return "Document"
+                return "文档"
             }
-            return "Document"
+            return "文档"
         }
     }
 
@@ -220,14 +220,14 @@ extension FileTypeService {
 
         let type: String
         switch permissions.first {
-        case "d": type = "Directory"
-        case "l": type = "Symbolic Link"
-        case "-": type = "File"
-        case "b": type = "Block Device"
-        case "c": type = "Character Device"
-        case "p": type = "Named Pipe"
-        case "s": type = "Socket"
-        default: type = "Unknown"
+        case "d": type = "目录"
+        case "l": type = "符号链接"
+        case "-": type = "文件"
+        case "b": type = "块设备"
+        case "c": type = "字符设备"
+        case "p": type = "命名管道"
+        case "s": type = "套接字"
+        default: type = "未知"
         }
 
         let permString = String(permissions.dropFirst())
@@ -235,14 +235,14 @@ extension FileTypeService {
         let group = formatPermissionGroup(String(permString.dropFirst(3).prefix(3)))
         let other = formatPermissionGroup(String(permString.suffix(3)))
 
-        return "\(type) - Owner: \(owner), Group: \(group), Others: \(other)"
+        return "\(type) - 所有者：\(owner)，用户组：\(group)，其他：\(other)"
     }
 
     private static func formatPermissionGroup(_ perms: String) -> String {
         var result: [String] = []
-        if perms.contains("r") { result.append("Read") }
-        if perms.contains("w") { result.append("Write") }
-        if perms.contains("x") { result.append("Execute") }
-        return result.isEmpty ? "None" : result.joined(separator: ", ")
+        if perms.contains("r") { result.append("读取") }
+        if perms.contains("w") { result.append("写入") }
+        if perms.contains("x") { result.append("执行") }
+        return result.isEmpty ? "无" : result.joined(separator: "、")
     }
 }

@@ -18,7 +18,7 @@ struct SearchReplaceBar: View {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(.secondary)
 
-                TextField("Search", text: $viewModel.searchText)
+                TextField("搜索", text: $viewModel.searchText)
                     .textFieldStyle(.plain)
                     .focused($isSearchFocused)
                     .onSubmit {
@@ -34,7 +34,7 @@ struct SearchReplaceBar: View {
                         .font(.caption)
                 }
                 .toggleStyle(.button)
-                .help("Case sensitive")
+                .help("区分大小写")
                 .onChange(of: viewModel.isCaseSensitive) {
                     viewModel.search()
                 }
@@ -43,7 +43,7 @@ struct SearchReplaceBar: View {
                     Image(systemName: "textformat")
                 }
                 .toggleStyle(.button)
-                .help("Whole word")
+                .help("全词匹配")
                 .onChange(of: viewModel.isWholeWord) {
                     viewModel.search()
                 }
@@ -86,17 +86,17 @@ struct SearchReplaceBar: View {
                 Image(systemName: "arrow.left.arrow.right")
                     .foregroundStyle(.secondary)
 
-                TextField("Replace", text: $viewModel.replaceText)
+                TextField("替换为", text: $viewModel.replaceText)
                     .textFieldStyle(.plain)
 
-                Button("Replace") {
+                Button("替换") {
                     viewModel.replaceCurrent()
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.small)
                 .disabled(viewModel.searchResults.isEmpty)
 
-                Button("Replace All") {
+                Button("全部替换") {
                     viewModel.replaceAll()
                 }
                 .buttonStyle(.bordered)

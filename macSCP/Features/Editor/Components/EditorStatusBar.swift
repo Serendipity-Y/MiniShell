@@ -23,9 +23,9 @@ struct EditorStatusBar: View {
 
             // Statistics
             HStack(spacing: UIConstants.spacing) {
-                StatItem(label: "Lines", value: "\(viewModel.lineCount)")
-                StatItem(label: "Words", value: "\(viewModel.wordCount)")
-                StatItem(label: "Characters", value: "\(viewModel.characterCount)")
+                StatItem(label: "行", value: "\(viewModel.lineCount)")
+                StatItem(label: "词", value: "\(viewModel.wordCount)")
+                StatItem(label: "字符", value: "\(viewModel.characterCount)")
             }
 
             // Save status
@@ -33,11 +33,11 @@ struct EditorStatusBar: View {
                 ProgressView()
                     .controlSize(.small)
             } else if viewModel.hasChanges {
-                Text("Modified")
+                Text("已修改")
                     .font(.caption)
                     .foregroundStyle(.orange)
             } else {
-                Text("Saved")
+                Text("已保存")
                     .font(.caption)
                     .foregroundStyle(.green)
             }

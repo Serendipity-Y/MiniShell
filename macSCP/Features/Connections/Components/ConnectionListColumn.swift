@@ -14,7 +14,7 @@ struct ConnectionListColumn: View {
         Group {
             switch viewModel.state {
             case .idle, .loading:
-                LoadingView(message: "Loading connections...")
+                LoadingView(message: "正在加载连接…")
 
             case .success:
                 if viewModel.filteredConnections.isEmpty {
@@ -33,15 +33,15 @@ struct ConnectionListColumn: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .navigationTitle(listTitle)
-        .navigationSubtitle("\(viewModel.filteredConnections.count) connections")
+        .navigationSubtitle("\(viewModel.filteredConnections.count) 个连接")
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
                 Button {
                     viewModel.isShowingNewConnectionSheet = true
                 } label: {
-                    Label("New Connection", systemImage: "square.and.pencil")
+                    Label("新建连接", systemImage: "square.and.pencil")
                 }
-                .help("New Connection")
+                .help("新建连接")
             }
         }
     }
@@ -49,9 +49,9 @@ struct ConnectionListColumn: View {
     private var listTitle: String {
         switch viewModel.selectedSidebarItem {
         case .allConnections:
-            return "All Connections"
+            return "全部连接"
         case .folder(let id):
-            return viewModel.folders.first { $0.id == id }?.name ?? "Folder"
+            return viewModel.folders.first { $0.id == id }?.name ?? "文件夹"
         }
     }
 
@@ -62,18 +62,18 @@ struct ConnectionListColumn: View {
             case .allConnections:
                 EmptyStateView(
                     icon: "server.rack",
-                    title: "No Connections",
-                    message: "Add a new SSH connection to get started\nwith remote file management.",
-                    actionTitle: "Add Connection"
+                    title: "暂无连接",
+                    message: "新建 SSH 连接后，即可管理远程文件。",
+                    actionTitle: "新建连接"
                 ) {
                     viewModel.isShowingNewConnectionSheet = true
                 }
             case .folder:
                 EmptyStateView(
                     icon: "folder",
-                    title: "Empty Folder",
-                    message: "This folder has no connections.\nDrag connections here or create a new one.",
-                    actionTitle: "Add Connection"
+                    title: "文件夹为空",
+                    message: "此文件夹中没有连接。可将连接拖到这里或新建连接。",
+                    actionTitle: "新建连接"
                 ) {
                     viewModel.isShowingNewConnectionSheet = true
                 }
@@ -98,22 +98,21 @@ struct ConnectionListColumn: View {
                     Button {
                         viewModel.connectToServer(connection)
                     } label: {
-                        Label("Open File Browser", systemImage: "folder")
+                        Label("打开文件传输", systemImage: "folder")
                     }
 
                     Button {
                         viewModel.requestTerminal(for: connection)
                     } label: {
-                        Label("Open Terminal", systemImage: "terminal")
+                        Label("打开终端", systemImage: "terminal")
                     }
-                    .disabled(connection.connectionType != .sftp)
 
                     Divider()
 
                     Button {
                         viewModel.editConnection(connection)
                     } label: {
-                        Label("Edit", systemImage: "pencil")
+                        Label("编辑", systemImage: "pencil")
                     }
 
                     Button {
@@ -121,7 +120,7 @@ struct ConnectionListColumn: View {
                             await viewModel.duplicateConnection(connection)
                         }
                     } label: {
-                        Label("Duplicate", systemImage: "plus.square.on.square")
+                        Label("复制", systemImage: "plus.square.on.square")
                     }
 
                     Divider()
@@ -131,7 +130,7 @@ struct ConnectionListColumn: View {
                             await viewModel.deleteConnection(connection)
                         }
                     } label: {
-                        Label("Delete", systemImage: "trash")
+                        Label("删除", systemImage: "trash")
                     }
                 }
                 .tag(connection.id)

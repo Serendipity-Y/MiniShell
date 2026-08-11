@@ -54,11 +54,6 @@ final class DependencyContainer: ObservableObject {
         SFTPSession()
     }
 
-    // MARK: - S3 Session Factory
-    func makeS3Session() -> S3SessionProtocol {
-        S3Session()
-    }
-
     // MARK: - Terminal Session Factory
     func makeTerminalSession() -> TerminalSessionProtocol {
         TerminalSession()
@@ -67,10 +62,6 @@ final class DependencyContainer: ObservableObject {
     // MARK: - File Repository Factory
     func makeFileRepository(session: SFTPSessionProtocol) -> FileRepositoryProtocol {
         FileRepository(sftpSession: session)
-    }
-
-    func makeS3FileRepository(session: S3SessionProtocol) -> FileRepositoryProtocol {
-        S3FileRepository(s3Session: session)
     }
 
     // MARK: - ViewModel Factories
@@ -96,21 +87,6 @@ final class DependencyContainer: ObservableObject {
             fileRepository: fileRepository,
             clipboardService: clipboardService,
             password: password
-        )
-    }
-
-    func makeS3FileBrowserViewModel(
-        connection: Connection,
-        s3Session: S3SessionProtocol,
-        secretAccessKey: String
-    ) -> FileBrowserViewModel {
-        let fileRepository = makeS3FileRepository(session: s3Session)
-        return FileBrowserViewModel(
-            connection: connection,
-            s3Session: s3Session,
-            fileRepository: fileRepository,
-            clipboardService: clipboardService,
-            secretAccessKey: secretAccessKey
         )
     }
 

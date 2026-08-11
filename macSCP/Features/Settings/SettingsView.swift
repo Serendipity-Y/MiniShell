@@ -45,12 +45,12 @@ struct SettingsView: View {
                     }
                 }
             )) {
-                Label("Require Touch ID", systemImage: "touchid")
+                Label("要求使用触控 ID", systemImage: "touchid")
             }
             .disabled(!isBiometricAvailable)
 
             if !isBiometricAvailable {
-                Text("Touch ID is not available on this Mac. Use a Mac with Touch ID or an Apple Watch to enable this feature.")
+                Text("此 Mac 不支持触控 ID。请使用支持触控 ID 的 Mac，或配对 Apple Watch 后启用此功能。")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -58,8 +58,8 @@ struct SettingsView: View {
             if isEnabled {
                 Toggle(isOn: Bindable(appLockManager).lockOnAppResume) {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Lock when switching apps")
-                        Text("Require authentication when returning to macSCP")
+                        Text("切换应用时锁定")
+                        Text("返回 MiniShell 时要求验证")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -67,8 +67,8 @@ struct SettingsView: View {
 
                 Toggle(isOn: Bindable(appLockManager).lockBeforeConnection) {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Require before each connection")
-                        Text("Authenticate before connecting to any server")
+                        Text("每次连接前要求验证")
+                        Text("连接任何服务器前先完成验证")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -76,7 +76,7 @@ struct SettingsView: View {
 
                 HStack {
                     Toggle(isOn: Bindable(appLockManager).lockAfterInactivity) {
-                        Text("Lock after inactivity")
+                        Text("闲置后锁定")
                     }
 
                     Spacer()
@@ -92,10 +92,10 @@ struct SettingsView: View {
                 }
             }
         } header: {
-            Text("Security")
+            Text("安全")
         } footer: {
             if isEnabled {
-                Text("The app always requires authentication on launch.")
+                Text("应用启动时始终要求验证。")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

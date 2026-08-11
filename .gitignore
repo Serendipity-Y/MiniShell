@@ -41,6 +41,10 @@ Packages/
 Package.pins
 Package.resolved
 *.xcodeproj
+!macSCP.xcodeproj/
+!macSCP.xcodeproj/xcshareddata/
+!macSCP.xcodeproj/xcshareddata/xcschemes/
+!macSCP.xcodeproj/xcshareddata/xcschemes/macSCP.xcscheme
 # .swiftpm
 
 .build/
@@ -125,6 +129,16 @@ build/
 *.bak
 *.swp
 *~
+
+# 私有配置与签名材料
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.mobileprovision
+*.xcconfig.local
 
 # IDE
 .vscode/

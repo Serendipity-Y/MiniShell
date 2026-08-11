@@ -81,32 +81,32 @@ extension EmptyStateView {
     static var noConnections: EmptyStateView {
         EmptyStateView(
             icon: "server.rack",
-            title: "No Connections",
-            message: "Add a new SSH connection to get started with\nremote file management."
+            title: "暂无连接",
+            message: "新建 SSH 连接后，即可管理远程文件。"
         )
     }
 
     static var noFiles: EmptyStateView {
         EmptyStateView(
             icon: "folder",
-            title: "Empty Directory",
-            message: "This directory is empty.\nUpload files or create new folders."
+            title: "目录为空",
+            message: "此目录中没有文件。可上传文件或新建文件夹。"
         )
     }
 
     static var noSearchResults: EmptyStateView {
         EmptyStateView(
             icon: "magnifyingglass",
-            title: "No Results Found",
-            message: "Try adjusting your search terms\nor filters to find what you're looking for."
+            title: "未找到结果",
+            message: "请调整搜索词或筛选条件。"
         )
     }
 
     static var noFolderSelected: EmptyStateView {
         EmptyStateView(
             icon: "folder.badge.questionmark",
-            title: "No Folder Selected",
-            message: "Select a folder from the sidebar\nto view its connections."
+            title: "未选择文件夹",
+            message: "请从侧边栏选择一个文件夹以查看其连接。"
         )
     }
 }

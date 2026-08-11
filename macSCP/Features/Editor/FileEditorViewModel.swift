@@ -32,7 +32,6 @@ final class FileEditorViewModel {
 
     // MARK: - Dependencies
     private let fileRepository: FileRepositoryProtocol
-    private let s3Session: S3SessionProtocol?
     private let sftpSession: SFTPSessionProtocol?
 
     // MARK: - Initialization
@@ -41,7 +40,6 @@ final class FileEditorViewModel {
         fileName: String,
         initialContent: String,
         fileRepository: FileRepositoryProtocol,
-        s3Session: S3SessionProtocol? = nil,
         sftpSession: SFTPSessionProtocol? = nil
     ) {
         self.filePath = filePath
@@ -49,16 +47,11 @@ final class FileEditorViewModel {
         self.content = initialContent
         self.savedContent = initialContent
         self.fileRepository = fileRepository
-        self.s3Session = s3Session
         self.sftpSession = sftpSession
     }
 
     // MARK: - Cleanup
     func cleanup() async {
-        if let s3Session = s3Session {
-            await s3Session.disconnect()
-            logInfo("S3 session disconnected for editor", category: .s3)
-        }
         if let sftpSession = sftpSession {
             await sftpSession.disconnect()
             logInfo("SFTP session disconnected for editor", category: .sftp)
@@ -93,7 +86,7 @@ final class FileEditorViewModel {
             return ""
         }
         if searchResults.isEmpty {
-            return "No results"
+            return "无结果"
         }
         return "\(currentSearchIndex + 1) of \(searchResults.count)"
     }
@@ -107,8 +100,7 @@ final class FileEditorViewModel {
             try await fileRepository.writeFileContent(content, to: filePath)
             savedContent = content
             state = .success(())
-            AnalyticsService.trackFileSaved(fileExtension: (fileName as NSString).pathExtension)
-            logInfo("File saved: \(fileName)", category: s3Session != nil ? .s3 : .sftp)
+            logInfo("File saved: \(fileName)", category: .sftp)
         } catch {
             logError("Failed to save file: \(error)", category: .sftp)
             state = .error(AppError.from(error))

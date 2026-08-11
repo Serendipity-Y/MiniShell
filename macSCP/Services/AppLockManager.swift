@@ -19,11 +19,11 @@ enum InactivityTimeout: Int, CaseIterable, Sendable, Identifiable {
 
     var label: String {
         switch self {
-        case .oneMinute: return "1 minute"
-        case .fiveMinutes: return "5 minutes"
-        case .fifteenMinutes: return "15 minutes"
-        case .thirtyMinutes: return "30 minutes"
-        case .oneHour: return "1 hour"
+        case .oneMinute: return "1 分钟"
+        case .fiveMinutes: return "5 分钟"
+        case .fifteenMinutes: return "15 分钟"
+        case .thirtyMinutes: return "30 分钟"
+        case .oneHour: return "1 小时"
         }
     }
 }
@@ -126,7 +126,7 @@ final class AppLockManager {
     /// Attempt to unlock the app
     func unlock() {
         Task { @MainActor in
-            let success = await performAuthentication(reason: "Unlock macSCP")
+            let success = await performAuthentication(reason: "解锁 MiniShell")
             if success {
                 resetInactivityTimer()
             }
@@ -140,7 +140,7 @@ final class AppLockManager {
         }
 
         logInfo("Authenticating for connection", category: .auth)
-        let success = await performAuthentication(reason: "Authenticate to connect")
+        let success = await performAuthentication(reason: "连接服务器前验证身份")
         if success {
             resetInactivityTimer()
         }
@@ -150,7 +150,6 @@ final class AppLockManager {
     /// Enable biometric lock (no auth needed to enable)
     func enableBiometricLock() {
         isBiometricLockEnabled = true
-        AnalyticsService.trackBiometricToggled(enabled: true)
         logInfo("Biometric lock enabled", category: .auth)
     }
 
@@ -158,13 +157,12 @@ final class AppLockManager {
     /// Returns true if the lock was successfully disabled.
     @discardableResult
     func disableBiometricLock() async -> Bool {
-        let success = await performAuthentication(reason: "Authenticate to disable Touch ID lock")
+        let success = await performAuthentication(reason: "关闭触控 ID 锁定前验证身份")
         guard success else {
             logInfo("Biometric lock disable denied: auth failed", category: .auth)
             return false
         }
         isBiometricLockEnabled = false
-        AnalyticsService.trackBiometricToggled(enabled: false)
         logInfo("Biometric lock disabled after authentication", category: .auth)
         return true
     }
@@ -193,7 +191,6 @@ final class AppLockManager {
             isLocked = false
             authenticationError = nil
             logInfo("Authentication succeeded", category: .auth)
-            AnalyticsService.trackBiometricResult(success: true)
             return true
 
         case .failure(let error):
@@ -204,7 +201,6 @@ final class AppLockManager {
                 authenticationError = error.localizedDescription
                 logWarning("Authentication failed: \(error.localizedDescription)", category: .auth)
             }
-            AnalyticsService.trackBiometricResult(success: false)
             return false
         }
     }

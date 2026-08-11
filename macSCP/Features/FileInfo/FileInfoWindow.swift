@@ -21,21 +21,21 @@ struct FileInfoWindow: View {
                     Image(systemName: "exclamationmark.triangle")
                         .font(.largeTitle)
                         .foregroundStyle(.orange)
-                    Text("Session Expired")
+                    Text("会话已失效")
                         .font(.headline)
-                    Text("This window's data was lost.")
+                    Text("此窗口的数据已丢失。")
                         .font(.callout)
                         .foregroundStyle(.secondary)
-                    Button("Close Window") {
+                    Button("关闭窗口") {
                         dismiss()
                     }
                 }
                 .padding(32)
             } else if let viewModel = viewModel {
                 FileInfoView(viewModel: viewModel)
-                    .navigationTitle("Info - \(viewModel.fileName)")
+                    .navigationTitle("信息 - \(viewModel.fileName)")
             } else {
-                LoadingView(message: "Loading...")
+                LoadingView(message: "正在加载…")
                     .task {
                         initializeViewModel()
                     }

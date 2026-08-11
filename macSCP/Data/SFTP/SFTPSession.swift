@@ -45,7 +45,7 @@ actor SFTPSession: SFTPSessionProtocol {
                 host: normalizedHost,
                 port: port,
                 authenticationMethod: authMethod,
-                hostKeyValidator: .acceptAnything(),
+                hostKeyValidator: HostKeyTrustService.shared.validator(host: normalizedHost, port: port),
                 reconnect: .never,
                 group: group
             )
@@ -97,7 +97,7 @@ actor SFTPSession: SFTPSessionProtocol {
                 host: normalizedHost,
                 port: port,
                 authenticationMethod: authMethod,
-                hostKeyValidator: .acceptAnything(),
+                hostKeyValidator: HostKeyTrustService.shared.validator(host: normalizedHost, port: port),
                 reconnect: .never,
                 group: group
             )
@@ -547,6 +547,10 @@ actor SFTPSession: SFTPSessionProtocol {
     }
 
     private func parseConnectionError(_ error: Error) -> AppError {
+        if let hostKeyError = error as? HostKeyValidationError {
+            return .connectionFailed(hostKeyError.localizedDescription)
+        }
+
         let description = error.localizedDescription.lowercased()
 
         if description.contains("connection refused") {

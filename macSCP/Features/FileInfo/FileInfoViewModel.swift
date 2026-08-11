@@ -46,7 +46,7 @@ final class FileInfoViewModel {
     }
 
     var modificationDate: String {
-        file.modificationDate?.fileInfoDisplayString ?? "Unknown"
+        file.modificationDate?.fileInfoDisplayString ?? "未知"
     }
 
     var iconName: String {
@@ -82,6 +82,6 @@ final class FileInfoViewModel {
     }
 
     var fileExtension: String {
-        file.fileExtension.isEmpty ? "None" : file.fileExtension.uppercased()
+        file.fileExtension.isEmpty ? "无" : file.fileExtension.uppercased()
     }
 }

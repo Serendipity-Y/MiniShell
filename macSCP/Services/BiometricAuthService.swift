@@ -21,11 +21,11 @@ enum BiometricError: LocalizedError, Sendable {
     var errorDescription: String? {
         switch self {
         case .notAvailable:
-            return "Touch ID is not available on this Mac."
+            return "此 Mac 不支持触控 ID。"
         case .authenticationFailed(let message):
-            return "Authentication failed: \(message)"
+            return "身份验证失败：\(message)"
         case .userCancelled:
-            return "Authentication was cancelled."
+            return "已取消身份验证。"
         }
     }
 }

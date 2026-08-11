@@ -24,11 +24,7 @@ enum ConnectionMapper {
             iconName: entity.iconName,
             folderId: entity.folder?.id,
             createdAt: entity.createdAt,
-            updatedAt: entity.updatedAt,
-            connectionType: ConnectionType(rawValue: entity.connectionType) ?? .sftp,
-            s3Region: entity.s3Region,
-            s3Bucket: entity.s3Bucket,
-            s3Endpoint: entity.s3Endpoint
+            updatedAt: entity.updatedAt
         )
     }
 
@@ -45,10 +41,6 @@ enum ConnectionMapper {
         entity.tags = domain.tags
         entity.iconName = domain.iconName
         entity.updatedAt = Date()
-        entity.connectionType = domain.connectionType.rawValue
-        entity.s3Region = domain.s3Region
-        entity.s3Bucket = domain.s3Bucket
-        entity.s3Endpoint = domain.s3Endpoint
     }
 
     /// Creates a new ConnectionEntity from a Connection domain model
@@ -66,11 +58,7 @@ enum ConnectionMapper {
             tags: domain.tags,
             iconName: domain.iconName,
             createdAt: domain.createdAt,
-            updatedAt: domain.updatedAt,
-            connectionType: domain.connectionType.rawValue,
-            s3Region: domain.s3Region,
-            s3Bucket: domain.s3Bucket,
-            s3Endpoint: domain.s3Endpoint
+            updatedAt: domain.updatedAt
         )
     }
 }

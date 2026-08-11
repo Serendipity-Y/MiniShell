@@ -21,9 +21,9 @@ struct NameInputSheet: View {
     init(
         title: String,
         message: String = "",
-        placeholder: String = "Name",
+        placeholder: String = "名称",
         initialValue: String = "",
-        confirmButtonTitle: String = "Create",
+        confirmButtonTitle: String = "创建",
         onConfirm: @escaping (String) -> Void,
         onCancel: @escaping () -> Void
     ) {
@@ -59,7 +59,7 @@ struct NameInputSheet: View {
             HStack {
                 Spacer()
 
-                Button("Cancel") {
+                Button("取消") {
                     onCancel()
                 }
                 .keyboardShortcut(.cancelAction)
@@ -87,10 +87,10 @@ struct NameInputSheet: View {
 extension NameInputSheet {
     static func newFolder(onConfirm: @escaping (String) -> Void, onCancel: @escaping () -> Void) -> NameInputSheet {
         NameInputSheet(
-            title: "New Folder",
-            message: "Enter a name for the new folder.",
-            placeholder: "Folder name",
-            confirmButtonTitle: "Create",
+            title: "新建文件夹",
+            message: "请输入新文件夹名称。",
+            placeholder: "文件夹名称",
+            confirmButtonTitle: "创建",
             onConfirm: onConfirm,
             onCancel: onCancel
         )
@@ -98,10 +98,10 @@ extension NameInputSheet {
 
     static func newFile(onConfirm: @escaping (String) -> Void, onCancel: @escaping () -> Void) -> NameInputSheet {
         NameInputSheet(
-            title: "New File",
-            message: "Enter a name for the new file.",
-            placeholder: "File name",
-            confirmButtonTitle: "Create",
+            title: "新建文件",
+            message: "请输入新文件名称。",
+            placeholder: "文件名称",
+            confirmButtonTitle: "创建",
             onConfirm: onConfirm,
             onCancel: onCancel
         )
@@ -113,11 +113,11 @@ extension NameInputSheet {
         onCancel: @escaping () -> Void
     ) -> NameInputSheet {
         NameInputSheet(
-            title: "Rename",
-            message: "Enter a new name.",
-            placeholder: "Name",
+            title: "重命名",
+            message: "请输入新名称。",
+            placeholder: "名称",
             initialValue: currentName,
-            confirmButtonTitle: "Rename",
+            confirmButtonTitle: "重命名",
             onConfirm: onConfirm,
             onCancel: onCancel
         )

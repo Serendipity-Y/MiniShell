@@ -21,13 +21,13 @@ struct FileBrowserWindow: View {
                     Image(systemName: "exclamationmark.triangle")
                         .font(.largeTitle)
                         .foregroundStyle(.orange)
-                    Text("Session Expired")
+                    Text("会话已失效")
                         .font(.headline)
-                    Text("This window's session data was lost. Please reconnect from the main window.")
+                    Text("此窗口的会话数据已丢失，请从主窗口重新连接。")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
-                    Button("Close Window") {
+                    Button("关闭窗口") {
                         dismiss()
                     }
                 }
@@ -36,7 +36,7 @@ struct FileBrowserWindow: View {
                 FileBrowserView(viewModel: viewModel)
                     .navigationTitle(viewModel.connection.name)
             } else {
-                LoadingView(message: "Initializing...")
+                LoadingView(message: "正在初始化…")
                     .task {
                         initializeViewModel()
                     }
@@ -65,30 +65,15 @@ struct FileBrowserWindow: View {
             port: data.port,
             username: data.username,
             authMethod: data.authMethod,
-            privateKeyPath: data.privateKeyPath,
-            connectionType: data.connectionType,
-            s3Region: data.s3Region,
-            s3Bucket: data.s3Bucket,
-            s3Endpoint: data.s3Endpoint
+            privateKeyPath: data.privateKeyPath
         )
 
-        if data.connectionType == .s3 {
-            // S3 connection
-            let s3Session = container.makeS3Session()
-            viewModel = container.makeS3FileBrowserViewModel(
-                connection: connection,
-                s3Session: s3Session,
-                secretAccessKey: data.s3SecretAccessKey ?? data.password
-            )
-        } else {
-            // SFTP connection
-            let sftpSession = container.makeSFTPSession()
-            viewModel = container.makeFileBrowserViewModel(
-                connection: connection,
-                sftpSession: sftpSession,
-                password: data.password
-            )
-        }
+        let sftpSession = container.makeSFTPSession()
+        viewModel = container.makeFileBrowserViewModel(
+            connection: connection,
+            sftpSession: sftpSession,
+            password: data.password
+        )
     }
 }
 

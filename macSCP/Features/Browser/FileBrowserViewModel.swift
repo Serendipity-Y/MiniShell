@@ -75,7 +75,6 @@ final class FileBrowserViewModel {
 
     // MARK: - Dependencies
     private let sftpSession: SFTPSessionProtocol?
-    private let s3Session: S3SessionProtocol?
     private let fileRepository: FileRepositoryProtocol
     private let clipboardService: ClipboardService
     private let navigationService = NavigationService()
@@ -90,26 +89,9 @@ final class FileBrowserViewModel {
     ) {
         self.connection = connection
         self.sftpSession = sftpSession
-        self.s3Session = nil
         self.fileRepository = fileRepository
         self.clipboardService = clipboardService
         self.password = password
-    }
-
-    // MARK: - Initialization (S3)
-    init(
-        connection: Connection,
-        s3Session: S3SessionProtocol,
-        fileRepository: FileRepositoryProtocol,
-        clipboardService: ClipboardService,
-        secretAccessKey: String
-    ) {
-        self.connection = connection
-        self.sftpSession = nil
-        self.s3Session = s3Session
-        self.fileRepository = fileRepository
-        self.clipboardService = clipboardService
-        self.password = secretAccessKey
     }
 
     // MARK: - Computed Properties
@@ -174,62 +156,37 @@ final class FileBrowserViewModel {
         state = .loading
 
         do {
-            if connection.connectionType == .s3 {
-                // S3 connection
-                guard let s3Session = s3Session else {
-                    throw AppError.notConnected
-                }
-                try await s3Session.connect(
-                    accessKeyId: connection.username,
-                    secretAccessKey: password,
-                    region: connection.s3Region ?? "us-east-1",
-                    bucket: connection.s3Bucket ?? "",
-                    endpoint: connection.s3Endpoint
-                )
-                isConnected = true
-                currentPath = await s3Session.currentPath
-                navigationService.reset(to: currentPath)
-                AnalyticsService.trackFileBrowserOpened(protocol: .init(from: connection.connectionType))
-                await loadFiles()
-            } else {
-                // SFTP connection
-                guard let sftpSession = sftpSession else {
-                    throw AppError.notConnected
-                }
-                if connection.authMethod == .password {
-                    try await sftpSession.connect(
-                        host: connection.host,
-                        port: connection.port,
-                        username: connection.username,
-                        password: password
-                    )
-                } else if let keyPath = connection.privateKeyPath {
-                    try await sftpSession.connect(
-                        host: connection.host,
-                        port: connection.port,
-                        username: connection.username,
-                        privateKeyPath: keyPath,
-                        passphrase: password.isEmpty ? nil : password
-                    )
-                }
-                isConnected = true
-                currentPath = await sftpSession.currentPath
-                navigationService.reset(to: currentPath)
-                AnalyticsService.trackFileBrowserOpened(protocol: .init(from: connection.connectionType))
-                await loadFiles()
+            guard let sftpSession = sftpSession else {
+                throw AppError.notConnected
             }
+            if connection.authMethod == .password {
+                try await sftpSession.connect(
+                    host: connection.host,
+                    port: connection.port,
+                    username: connection.username,
+                    password: password
+                )
+            } else if let keyPath = connection.privateKeyPath {
+                try await sftpSession.connect(
+                    host: connection.host,
+                    port: connection.port,
+                    username: connection.username,
+                    privateKeyPath: keyPath,
+                    passphrase: password.isEmpty ? nil : password
+                )
+            }
+            isConnected = true
+            currentPath = await sftpSession.currentPath
+            navigationService.reset(to: currentPath)
+            await loadFiles()
         } catch {
-            logError("Connection failed: \(error)", category: connection.connectionType == .s3 ? .s3 : .sftp)
+            logError("Connection failed: \(error)", category: .sftp)
             state = .error(AppError.from(error))
         }
     }
 
     func disconnect() async {
-        if connection.connectionType == .s3 {
-            await s3Session?.disconnect()
-        } else {
-            await sftpSession?.disconnect()
-        }
+        await sftpSession?.disconnect()
         isConnected = false
         files = []
         currentPath = "/"
@@ -243,14 +200,10 @@ final class FileBrowserViewModel {
 
         do {
             files = try await fileRepository.listFiles(at: currentPath)
-            if connection.connectionType == .s3 {
-                currentPath = await s3Session?.currentPath ?? "/"
-            } else {
-                currentPath = await sftpSession?.currentPath ?? "/"
-            }
+            currentPath = await sftpSession?.currentPath ?? "/"
             state = .success(())
         } catch {
-            logError("Failed to load files: \(error)", category: connection.connectionType == .s3 ? .s3 : .sftp)
+            logError("Failed to load files: \(error)", category: .sftp)
             state = .error(AppError.from(error))
         }
     }
@@ -260,16 +213,12 @@ final class FileBrowserViewModel {
 
         do {
             files = try await fileRepository.listFiles(at: path)
-            if connection.connectionType == .s3 {
-                currentPath = await s3Session?.currentPath ?? "/"
-            } else {
-                currentPath = await sftpSession?.currentPath ?? "/"
-            }
+            currentPath = await sftpSession?.currentPath ?? "/"
             navigationService.navigate(to: currentPath)
             selectedFiles.removeAll()
             state = .success(())
         } catch {
-            logError("Failed to navigate to \(path): \(error)", category: connection.connectionType == .s3 ? .s3 : .sftp)
+            logError("Failed to navigate to \(path): \(error)", category: .sftp)
             state = .error(AppError.from(error))
         }
     }
@@ -311,15 +260,11 @@ final class FileBrowserViewModel {
 
         do {
             files = try await fileRepository.listFiles(at: path)
-            if connection.connectionType == .s3 {
-                currentPath = await s3Session?.currentPath ?? "/"
-            } else {
-                currentPath = await sftpSession?.currentPath ?? "/"
-            }
+            currentPath = await sftpSession?.currentPath ?? "/"
             selectedFiles.removeAll()
             state = .success(())
         } catch {
-            logError("Failed to navigate to \(path): \(error)", category: connection.connectionType == .s3 ? .s3 : .sftp)
+            logError("Failed to navigate to \(path): \(error)", category: .sftp)
             state = .error(AppError.from(error))
         }
     }
@@ -332,7 +277,6 @@ final class FileBrowserViewModel {
         do {
             try await fileRepository.createDirectory(at: path)
             isShowingNewFolderSheet = false
-            AnalyticsService.trackFileOperation(.createFolder, protocol: .init(from: connection.connectionType))
             await loadFiles()
         } catch {
             logError("Failed to create folder: \(error)", category: .sftp)
@@ -360,7 +304,6 @@ final class FileBrowserViewModel {
             try await fileRepository.rename(from: file.path, to: newPath)
             isShowingRenameSheet = false
             fileToRename = nil
-            AnalyticsService.trackFileOperation(.rename, protocol: .init(from: connection.connectionType))
             await loadFiles()
         } catch {
             logError("Failed to rename file: \(error)", category: .sftp)
@@ -382,7 +325,6 @@ final class FileBrowserViewModel {
         isShowingDeleteConfirmation = false
         filesToDelete = []
         selectedFiles.removeAll()
-        AnalyticsService.trackFileOperation(.delete, protocol: .init(from: connection.connectionType), count: files.count)
         await loadFiles()
     }
 
@@ -483,8 +425,7 @@ final class FileBrowserViewModel {
                     self.transferTasks.removeValue(forKey: transferId)
                 }
 
-                AnalyticsService.trackFileDownloaded(protocol: .init(from: self.connection.connectionType), fileCount: 1, totalBytes: file.size)
-                logInfo("Downloaded: \(file.name)", category: self.connection.connectionType == .s3 ? .s3 : .sftp)
+                logInfo("Downloaded: \(file.name)", category: .sftp)
 
             } catch {
                 let isCancellation = error is CancellationError ||
@@ -499,7 +440,7 @@ final class FileBrowserViewModel {
                         }
                         self.transferTasks.removeValue(forKey: transferId)
                     }
-                    logInfo("Download cancelled: \(file.name)", category: self.connection.connectionType == .s3 ? .s3 : .sftp)
+                    logInfo("Download cancelled: \(file.name)", category: .sftp)
                 } else {
                     await MainActor.run {
                         if var failedTransfer = self.activeTransfers.removeValue(forKey: transferId) {
@@ -510,7 +451,7 @@ final class FileBrowserViewModel {
                         self.transferTasks.removeValue(forKey: transferId)
                     }
 
-                    logError("Download failed: \(error)", category: self.connection.connectionType == .s3 ? .s3 : .sftp)
+                    logError("Download failed: \(error)", category: .sftp)
                     await MainActor.run {
                         self.error = AppError.from(error)
                     }
@@ -595,8 +536,7 @@ final class FileBrowserViewModel {
                         self.transferTasks.removeValue(forKey: transferId)
                     }
 
-                    AnalyticsService.trackFileUploaded(protocol: .init(from: self.connection.connectionType), fileCount: 1, totalBytes: fileSize)
-                    logInfo("Uploaded: \(url.lastPathComponent)", category: self.connection.connectionType == .s3 ? .s3 : .sftp)
+                    logInfo("Uploaded: \(url.lastPathComponent)", category: .sftp)
 
                 } catch {
                     // Check if this was a cancellation (either direct CancellationError or Task was cancelled)
@@ -613,7 +553,7 @@ final class FileBrowserViewModel {
                             }
                             self.transferTasks.removeValue(forKey: transferId)
                         }
-                        logInfo("Upload cancelled: \(url.lastPathComponent)", category: self.connection.connectionType == .s3 ? .s3 : .sftp)
+                        logInfo("Upload cancelled: \(url.lastPathComponent)", category: .sftp)
                     } else {
                         // Mark as failed
                         await MainActor.run {
@@ -625,7 +565,7 @@ final class FileBrowserViewModel {
                             self.transferTasks.removeValue(forKey: transferId)
                         }
 
-                        logError("Upload failed: \(error)", category: self.connection.connectionType == .s3 ? .s3 : .sftp)
+                        logError("Upload failed: \(error)", category: .sftp)
                         await MainActor.run {
                             self.error = AppError.from(error)
                         }
@@ -706,8 +646,7 @@ final class FileBrowserViewModel {
                 }
             }
 
-            AnalyticsService.trackFileDownloaded(protocol: .init(from: connection.connectionType), fileCount: 1, totalBytes: file.size)
-            logInfo("Downloaded via drag: \(file.name)", category: connection.connectionType == .s3 ? .s3 : .sftp)
+            logInfo("Downloaded via drag: \(file.name)", category: .sftp)
         } catch {
             if var failedTransfer = activeTransfers.removeValue(forKey: transferId) {
                 failedTransfer.status = .failed
@@ -784,7 +723,6 @@ final class FileBrowserViewModel {
         )
         let windowId = WindowManager.shared.storeFileInfoData(data)
         pendingFileInfoWindowId = windowId
-        AnalyticsService.track(.fileInfoOpened)
     }
 
     func clearPendingFileInfoWindow() {
@@ -802,15 +740,10 @@ final class FileBrowserViewModel {
             username: connection.username,
             password: password,
             authMethod: connection.authMethod,
-            privateKeyPath: connection.privateKeyPath,
-            connectionType: connection.connectionType,
-            s3Region: connection.s3Region,
-            s3Bucket: connection.s3Bucket,
-            s3Endpoint: connection.s3Endpoint
+            privateKeyPath: connection.privateKeyPath
         )
         let windowId = WindowManager.shared.storeFileEditorData(data)
         pendingEditorWindowId = windowId
-        AnalyticsService.trackEditorOpened(fileExtension: (file.name as NSString).pathExtension)
     }
 
     func clearPendingEditorWindow() {
@@ -824,12 +757,6 @@ final class FileBrowserViewModel {
     // MARK: - Terminal
 
     func openTerminal() {
-        // Only supported for SFTP connections
-        guard connection.connectionType == .sftp else {
-            logWarning("Terminal only supported for SFTP connections", category: .ui)
-            return
-        }
-
         let data = TerminalWindowData(
             connectionId: connection.id,
             connectionName: connection.name,

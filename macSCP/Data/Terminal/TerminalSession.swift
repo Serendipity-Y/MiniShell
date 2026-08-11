@@ -68,7 +68,7 @@ actor TerminalSession: TerminalSessionProtocol {
                 host: normalizedHost,
                 port: port,
                 authenticationMethod: authMethod,
-                hostKeyValidator: .acceptAnything(),
+                hostKeyValidator: HostKeyTrustService.shared.validator(host: normalizedHost, port: port),
                 reconnect: .never,
                 group: group
             )
@@ -124,7 +124,7 @@ actor TerminalSession: TerminalSessionProtocol {
                 host: normalizedHost,
                 port: port,
                 authenticationMethod: authMethod,
-                hostKeyValidator: .acceptAnything(),
+                hostKeyValidator: HostKeyTrustService.shared.validator(host: normalizedHost, port: port),
                 reconnect: .never,
                 group: group
             )
@@ -291,6 +291,10 @@ actor TerminalSession: TerminalSessionProtocol {
     // MARK: - Error Parsing
 
     private func parseConnectionError(_ error: Error) -> AppError {
+        if let hostKeyError = error as? HostKeyValidationError {
+            return .terminalConnectionFailed(hostKeyError.localizedDescription)
+        }
+
         let description = error.localizedDescription.lowercased()
 
         if description.contains("connection refused") {

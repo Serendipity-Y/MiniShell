@@ -37,7 +37,7 @@ struct ErrorView: View {
             }
 
             VStack(spacing: 8) {
-                Text("Something Went Wrong")
+                Text("发生错误")
                     .font(.system(size: 17, weight: .semibold))
                     .foregroundStyle(.primary)
 
@@ -60,7 +60,7 @@ struct ErrorView: View {
                 Button {
                     retryAction()
                 } label: {
-                    Label("Try Again", systemImage: "arrow.clockwise")
+                    Label("重试", systemImage: "arrow.clockwise")
                         .font(.system(size: 13, weight: .medium))
                 }
                 .buttonStyle(.borderedProminent)
@@ -182,14 +182,14 @@ struct ErrorAlertModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .alert(
-                "Error",
+                "错误",
                 isPresented: Binding(
                     get: { error != nil },
                     set: { if !$0 { error = nil } }
                 ),
                 presenting: error
             ) { _ in
-                Button("OK", role: .cancel) {
+                Button("确定", role: .cancel) {
                     error = nil
                 }
             } message: { error in

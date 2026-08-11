@@ -21,15 +21,15 @@ struct PasswordPromptSheet: View {
                 .font(.largeTitle)
                 .foregroundStyle(.secondary)
 
-            Text("Enter Password")
+            Text("输入密码")
                 .font(.headline)
 
-            Text("Enter the password for \"\(connectionName)\"")
+            Text("请输入“\(connectionName)”的密码")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
 
-            SecureField("Password", text: $password)
+            SecureField("密码", text: $password)
                 .textFieldStyle(.roundedBorder)
                 .focused($isFocused)
                 .onSubmit {
@@ -39,12 +39,12 @@ struct PasswordPromptSheet: View {
                 }
 
             HStack {
-                Button("Cancel") {
+                Button("取消") {
                     onCancel()
                 }
                 .keyboardShortcut(.cancelAction)
 
-                Button("Connect") {
+                Button("连接") {
                     onConnect(password)
                 }
                 .keyboardShortcut(.defaultAction)

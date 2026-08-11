@@ -10,7 +10,7 @@ import SwiftUI
 struct LoadingView: View {
     let message: String
 
-    init(message: String = "Loading...") {
+    init(message: String = "正在加载…") {
         self.message = message
     }
 
@@ -33,7 +33,7 @@ struct LoadingView: View {
 struct InlineLoadingView: View {
     let message: String
 
-    init(message: String = "Loading...") {
+    init(message: String = "正在加载…") {
         self.message = message
     }
 
@@ -57,7 +57,7 @@ struct InlineLoadingView: View {
 struct LoadingOverlayView: View {
     let message: String
 
-    init(message: String = "Loading...") {
+    init(message: String = "正在加载…") {
         self.message = message
     }
 
@@ -90,7 +90,7 @@ struct PulsingLoadingView: View {
     let message: String
     @State private var isAnimating = false
 
-    init(message: String = "Loading...") {
+    init(message: String = "正在加载…") {
         self.message = message
     }
 

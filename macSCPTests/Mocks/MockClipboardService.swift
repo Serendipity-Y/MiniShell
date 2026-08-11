@@ -6,7 +6,7 @@
 //
 
 import Foundation
-@testable import macSCP
+@testable import MiniShell
 
 @MainActor
 final class MockClipboardService {

@@ -23,20 +23,4 @@ protocol KeychainServiceProtocol: Sendable {
     /// Checks if a password exists for a connection
     func hasPassword(for connectionId: UUID) -> Bool
 
-    // MARK: - S3 Credentials
-
-    /// Saves S3 credentials for a connection
-    func saveS3Credentials(_ credentials: S3Credentials, for connectionId: UUID) throws
-
-    /// Retrieves S3 credentials for a connection
-    func getS3Credentials(for connectionId: UUID) -> S3Credentials?
-
-    /// Deletes S3 credentials for a connection
-    func deleteS3Credentials(for connectionId: UUID) throws
-
-    /// Updates S3 credentials for a connection
-    func updateS3Credentials(_ credentials: S3Credentials, for connectionId: UUID) throws
-
-    /// Checks if S3 credentials exist for a connection
-    func hasS3Credentials(for connectionId: UUID) -> Bool
 }

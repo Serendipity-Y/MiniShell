@@ -24,7 +24,7 @@ struct EditorHeaderView: View {
                     Circle()
                         .fill(.orange)
                         .frame(width: 8, height: 8)
-                        .help("Unsaved changes")
+                        .help("有未保存的更改")
                 }
             }
 
@@ -40,7 +40,7 @@ struct EditorHeaderView: View {
                     Image(systemName: "arrow.clockwise")
                 }
                 .buttonStyle(.borderless)
-                .help("Reload from server")
+                .help("从服务器重新加载")
 
                 Button {
                     viewModel.revertChanges()
@@ -49,7 +49,7 @@ struct EditorHeaderView: View {
                 }
                 .buttonStyle(.borderless)
                 .disabled(!viewModel.hasChanges)
-                .help("Revert changes")
+                .help("还原更改")
 
                 Button {
                     Task {
@@ -60,7 +60,7 @@ struct EditorHeaderView: View {
                 }
                 .buttonStyle(.borderless)
                 .disabled(!viewModel.hasChanges)
-                .help("Save")
+                .help("保存")
             }
         }
         .padding(.horizontal)

@@ -59,32 +59,32 @@ struct FileInfoView: View {
     }
 
     private var generalSection: some View {
-        InfoSection(title: "General") {
-            InfoRow(label: "Kind", value: viewModel.fileType)
-            InfoRow(label: "Size", value: viewModel.fileSize)
+        InfoSection(title: "通用") {
+            InfoRow(label: "种类", value: viewModel.fileType)
+            InfoRow(label: "大小", value: viewModel.fileSize)
 
             if !viewModel.isDirectory {
-                InfoRow(label: "Extension", value: viewModel.fileExtension)
+                InfoRow(label: "扩展名", value: viewModel.fileExtension)
             }
 
-            InfoRow(label: "Modified", value: viewModel.modificationDate)
+            InfoRow(label: "修改时间", value: viewModel.modificationDate)
         }
     }
 
     private var locationSection: some View {
-        InfoSection(title: "Location") {
-            InfoRow(label: "Path", value: viewModel.filePath)
-            InfoRow(label: "Parent", value: viewModel.parentDirectory)
-            InfoRow(label: "Server", value: viewModel.connectionName)
+        InfoSection(title: "位置") {
+            InfoRow(label: "路径", value: viewModel.filePath)
+            InfoRow(label: "上级目录", value: viewModel.parentDirectory)
+            InfoRow(label: "服务器", value: viewModel.connectionName)
         }
     }
 
     private var permissionsSection: some View {
-        InfoSection(title: "Permissions") {
-            InfoRow(label: "Mode", value: viewModel.permissions)
+        InfoSection(title: "权限") {
+            InfoRow(label: "模式", value: viewModel.permissions)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Details")
+                Text("详情")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Text(viewModel.permissionsDescription)
@@ -95,19 +95,19 @@ struct FileInfoView: View {
     }
 
     private var directorySection: some View {
-        InfoSection(title: "Directory Info") {
-            InfoRow(label: "Type", value: "Folder")
+        InfoSection(title: "目录信息") {
+            InfoRow(label: "类型", value: "文件夹")
         }
     }
 
     private var fileSection: some View {
-        InfoSection(title: "File Info") {
-            InfoRow(label: "Hidden", value: viewModel.isHidden ? "Yes" : "No")
-            InfoRow(label: "Executable", value: viewModel.isExecutable ? "Yes" : "No")
-            InfoRow(label: "Editable", value: viewModel.isEditable ? "Yes" : "No")
+        InfoSection(title: "文件信息") {
+            InfoRow(label: "隐藏", value: viewModel.isHidden ? "是" : "否")
+            InfoRow(label: "可执行", value: viewModel.isExecutable ? "是" : "否")
+            InfoRow(label: "可编辑", value: viewModel.isEditable ? "是" : "否")
 
             if viewModel.isSymlink {
-                InfoRow(label: "Symlink", value: "Yes")
+                InfoRow(label: "符号链接", value: "是")
             }
         }
     }

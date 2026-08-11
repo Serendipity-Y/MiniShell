@@ -10,12 +10,7 @@ import SwiftUI
 struct ConnectionRowView: View {
     let connection: Connection
 
-    private var iconColor: Color {
-        switch connection.connectionType {
-        case .sftp: return .blue
-        case .s3:   return .orange
-        }
-    }
+    private let iconColor = Color.blue
 
     var body: some View {
         HStack(spacing: 10) {
@@ -34,7 +29,7 @@ struct ConnectionRowView: View {
 
                     Spacer()
 
-                    Text(connection.connectionType.displayName)
+                    Text("SSH / SFTP 连接")
                         .font(.system(size: 10, weight: .medium))
                         .foregroundStyle(.secondary)
                         .padding(.horizontal, 6)

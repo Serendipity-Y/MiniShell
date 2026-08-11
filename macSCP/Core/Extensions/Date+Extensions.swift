@@ -15,10 +15,10 @@ extension Date {
 
         if calendar.isDateInToday(self) {
             formatter.dateFormat = "HH:mm"
-            return "Today, " + formatter.string(from: self)
+            return "今天 " + formatter.string(from: self)
         } else if calendar.isDateInYesterday(self) {
             formatter.dateFormat = "HH:mm"
-            return "Yesterday, " + formatter.string(from: self)
+            return "昨天 " + formatter.string(from: self)
         } else if calendar.isDate(self, equalTo: Date(), toGranularity: .year) {
             formatter.dateFormat = "MMM d, HH:mm"
             return formatter.string(from: self)

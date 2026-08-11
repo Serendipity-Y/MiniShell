@@ -23,13 +23,6 @@ enum AppError: LocalizedError, Sendable {
     case directoryNotEmpty
     case invalidPath
 
-    // S3 errors
-    case s3BucketNotFound
-    case s3AccessDenied
-    case s3ObjectNotFound
-    case s3OperationFailed(String)
-    case invalidS3Credentials
-
     // Data errors
     case saveFailed(String)
     case fetchFailed(String)
@@ -63,106 +56,91 @@ enum AppError: LocalizedError, Sendable {
     var errorDescription: String? {
         switch self {
         case .connectionFailed(let message):
-            return "Connection failed: \(message)"
+            return "连接失败：\(message)"
         case .connectionTimeout:
-            return "Connection timed out"
+            return "连接超时"
         case .connectionLost:
-            return "Connection was lost"
+            return "连接已断开"
         case .authenticationFailed:
-            return "Authentication failed. Please check your credentials."
+            return "身份验证失败，请检查凭据。"
         case .hostUnreachable:
-            return "Host is unreachable. Check the hostname and network connection."
+            return "无法访问主机，请检查主机地址和网络连接。"
 
         case .sftpOperationFailed(let message):
-            return "SFTP operation failed: \(message)"
+            return "SFTP 操作失败：\(message)"
         case .permissionDenied:
-            return "Permission denied"
+            return "权限不足"
         case .fileNotFound:
-            return "File or directory not found"
+            return "未找到文件或目录"
         case .fileAlreadyExists:
-            return "A file or directory with this name already exists"
+            return "同名文件或目录已存在"
         case .directoryNotEmpty:
-            return "Directory is not empty"
+            return "目录不为空"
         case .invalidPath:
-            return "Invalid path"
-
-        case .s3BucketNotFound:
-            return "S3 bucket not found"
-        case .s3AccessDenied:
-            return "Access denied to S3 resource"
-        case .s3ObjectNotFound:
-            return "S3 object not found"
-        case .s3OperationFailed(let message):
-            return "S3 operation failed: \(message)"
-        case .invalidS3Credentials:
-            return "Invalid S3 credentials"
+            return "路径无效"
 
         case .saveFailed(let message):
-            return "Failed to save: \(message)"
+            return "保存失败：\(message)"
         case .fetchFailed(let message):
-            return "Failed to fetch: \(message)"
+            return "读取失败：\(message)"
         case .deleteFailed(let message):
-            return "Failed to delete: \(message)"
+            return "删除失败：\(message)"
         case .entityNotFound:
-            return "Entity not found"
+            return "未找到数据"
 
         case .keychainSaveFailed:
-            return "Failed to save password to keychain"
+            return "无法将密码保存到钥匙串"
         case .keychainReadFailed:
-            return "Failed to read password from keychain"
+            return "无法从钥匙串读取密码"
         case .keychainDeleteFailed:
-            return "Failed to delete password from keychain"
+            return "无法从钥匙串删除密码"
 
         case .downloadFailed(let message):
-            return "Download failed: \(message)"
+            return "下载失败：\(message)"
         case .uploadFailed(let message):
-            return "Upload failed: \(message)"
+            return "上传失败：\(message)"
         case .fileReadFailed:
-            return "Failed to read file"
+            return "读取文件失败"
         case .fileWriteFailed:
-            return "Failed to write file"
+            return "写入文件失败"
 
         case .terminalConnectionFailed(let message):
-            return "Terminal connection failed: \(message)"
+            return "终端连接失败：\(message)"
         case .terminalConnectionLost:
-            return "Terminal connection was lost"
+            return "终端连接已丢失"
         case .terminalPTYFailed:
-            return "Failed to allocate pseudo-terminal"
+            return "无法分配伪终端"
 
         case .biometricNotAvailable:
-            return "Touch ID is not available on this Mac"
+            return "此 Mac 不支持触控 ID"
         case .biometricAuthFailed(let message):
-            return "Authentication failed: \(message)"
+            return "身份验证失败：\(message)"
 
         case .unknown(let message):
             return message
         case .notConnected:
-            return "Not connected to server"
+            return "尚未连接到服务器"
         }
     }
 
     var recoverySuggestion: String? {
         switch self {
         case .connectionFailed, .connectionTimeout, .hostUnreachable:
-            return "Please check your network connection and server address."
+            return "请检查网络连接和服务器地址。"
         case .authenticationFailed:
-            return "Please verify your username and password."
-        case .permissionDenied, .s3AccessDenied:
-            return "You don't have permission to perform this action."
+            return "请确认用户名和密码。"
+        case .permissionDenied:
+            return "你没有执行此操作的权限。"
         case .notConnected:
-            return "Please connect to a server first."
-        case .s3BucketNotFound:
-            return "Please check your bucket name and region."
-        case .invalidS3Credentials:
-            return "Please verify your Access Key ID and Secret Access Key."
+            return "请先连接服务器。"
         case .terminalConnectionFailed, .terminalConnectionLost:
-            return "Please check your network connection and try reconnecting."
+            return "请检查网络连接后重新连接。"
         case .terminalPTYFailed:
-            return "The server may not support interactive terminals. Please try again."
+            return "服务器可能不支持交互式终端，请重试。"
         case .biometricNotAvailable:
-            return "Use a Mac with Touch ID or pair an Apple Watch to enable biometric authentication."
+            return "请使用支持触控 ID 的 Mac，或配对 Apple Watch 后启用生物认证。"
         case .biometricAuthFailed:
-            return "Please try again or use your system password."
+            return "请重试或使用系统密码。"
         default:
             return nil
         }

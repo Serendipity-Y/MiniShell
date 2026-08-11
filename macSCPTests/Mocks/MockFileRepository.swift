@@ -6,7 +6,7 @@
 //
 
 import Foundation
-@testable import macSCP
+@testable import MiniShell
 
 final class MockFileRepository: FileRepositoryProtocol, @unchecked Sendable {
     // MARK: - Recorded Calls

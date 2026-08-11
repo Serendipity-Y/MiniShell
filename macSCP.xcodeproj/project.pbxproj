@@ -7,13 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4721B3DC2F2F229B00279B18 /* TelemetryClient in Frameworks */ = {isa = PBXBuildFile; productRef = 4721B3DB2F2F229B00279B18 /* TelemetryClient */; };
 		47384BA32E96FC5200ECB4B5 /* Citadel in Frameworks */ = {isa = PBXBuildFile; productRef = 47384BA22E96FC5200ECB4B5 /* Citadel */; };
 		47679DD22F33D7E3002F804C /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = 47679DD12F33D7E3002F804C /* SwiftTerm */; };
 		47679DD42F33D7E3002F804C /* SwiftTermFuzz in Frameworks */ = {isa = PBXBuildFile; productRef = 47679DD32F33D7E3002F804C /* SwiftTermFuzz */; };
 		47679DD62F33D7E3002F804C /* termcast in Frameworks */ = {isa = PBXBuildFile; productRef = 47679DD52F33D7E3002F804C /* termcast */; };
 		47AD46FB2F3E3B2E0043EA07 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 47AD46FA2F3E3B2E0043EA07 /* Sparkle */; };
-		47S3SOTO2F3000000000A1A1 /* SotoS3 in Frameworks */ = {isa = PBXBuildFile; productRef = 47S3SOTO2F3000000000A1A0 /* SotoS3 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,9 +69,7 @@
 			files = (
 				47AD46FB2F3E3B2E0043EA07 /* Sparkle in Frameworks */,
 				47384BA32E96FC5200ECB4B5 /* Citadel in Frameworks */,
-				4721B3DC2F2F229B00279B18 /* TelemetryClient in Frameworks */,
 				47679DD22F33D7E3002F804C /* SwiftTerm in Frameworks */,
-				47S3SOTO2F3000000000A1A1 /* SotoS3 in Frameworks */,
 				47679DD42F33D7E3002F804C /* SwiftTermFuzz in Frameworks */,
 				47679DD62F33D7E3002F804C /* termcast in Frameworks */,
 			);
@@ -154,8 +150,6 @@
 			name = macSCP;
 			packageProductDependencies = (
 				47384BA22E96FC5200ECB4B5 /* Citadel */,
-				4721B3DB2F2F229B00279B18 /* TelemetryClient */,
-				47S3SOTO2F3000000000A1A0 /* SotoS3 */,
 				47679DD12F33D7E3002F804C /* SwiftTerm */,
 				47679DD32F33D7E3002F804C /* SwiftTermFuzz */,
 				47679DD52F33D7E3002F804C /* termcast */,
@@ -222,8 +216,6 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				47384BA12E96FC5200ECB4B5 /* XCRemoteSwiftPackageReference "Citadel" */,
-				4721B3DA2F2F229B00279B18 /* XCRemoteSwiftPackageReference "SwiftClient" */,
-				47S3SOTO2F3000000000A1A2 /* XCRemoteSwiftPackageReference "soto" */,
 				47679DD02F33D7E3002F804C /* XCRemoteSwiftPackageReference "SwiftTerm" */,
 				47AD46F92F3E3B2E0043EA07 /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
@@ -590,7 +582,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/macSCP.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/macSCP";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MiniShell.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/MiniShell";
 			};
 			name = Debug;
 		};
@@ -611,7 +603,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/macSCP.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/macSCP";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MiniShell.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/MiniShell";
 			};
 			name = Release;
 		};
@@ -657,14 +649,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		4721B3DA2F2F229B00279B18 /* XCRemoteSwiftPackageReference "SwiftClient" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/TelemetryDeck/SwiftClient";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.11.0;
-			};
-		};
 		47384BA12E96FC5200ECB4B5 /* XCRemoteSwiftPackageReference "Citadel" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Orlandos-nl/Citadel";
@@ -689,22 +673,9 @@
 				minimumVersion = 2.8.1;
 			};
 		};
-		47S3SOTO2F3000000000A1A2 /* XCRemoteSwiftPackageReference "soto" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/soto-project/soto";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 7.0.0;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		4721B3DB2F2F229B00279B18 /* TelemetryClient */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 4721B3DA2F2F229B00279B18 /* XCRemoteSwiftPackageReference "SwiftClient" */;
-			productName = TelemetryClient;
-		};
 		47384BA22E96FC5200ECB4B5 /* Citadel */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 47384BA12E96FC5200ECB4B5 /* XCRemoteSwiftPackageReference "Citadel" */;
@@ -729,11 +700,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 47AD46F92F3E3B2E0043EA07 /* XCRemoteSwiftPackageReference "Sparkle" */;
 			productName = Sparkle;
-		};
-		47S3SOTO2F3000000000A1A0 /* SotoS3 */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 47S3SOTO2F3000000000A1A2 /* XCRemoteSwiftPackageReference "soto" */;
-			productName = SotoS3;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

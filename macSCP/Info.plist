@@ -10,7 +10,7 @@
                 <string>public.data</string>
             </array>
             <key>UTTypeDescription</key>
-            <string>MiniShell Connection</string>
+            <string>MiniShell 连接配置</string>
             <key>UTTypeIdentifier</key>
             <string>com.minishell.connection</string>
             <key>UTTypeTagSpecification</key>

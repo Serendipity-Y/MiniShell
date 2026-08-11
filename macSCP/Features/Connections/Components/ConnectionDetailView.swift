@@ -15,12 +15,7 @@ struct ConnectionDetailView: View {
     let onDuplicate: () -> Void
     let onDelete: () -> Void
 
-    private var iconColor: Color {
-        switch connection.connectionType {
-        case .sftp: return .blue
-        case .s3:   return .orange
-        }
-    }
+    private let iconColor = Color.blue
 
     var body: some View {
         ScrollView {
@@ -45,7 +40,7 @@ struct ConnectionDetailView: View {
         .toolbar {
             ToolbarItem(placement: .automatic) {
                 Button(action: onEdit) {
-                    Text("Edit")
+                    Text("编辑")
                 }
             }
         }
@@ -64,8 +59,7 @@ struct ConnectionDetailView: View {
             Text(connection.name)
                 .font(.system(size: 22, weight: .bold))
 
-            // Connection type subtitle
-            Text(connection.connectionType.displayName)
+            Text("SSH / SFTP 连接")
                 .font(.system(size: 14))
                 .foregroundStyle(.secondary)
         }
@@ -79,30 +73,27 @@ struct ConnectionDetailView: View {
             // Open Files
             ContactActionButton(
                 icon: "folder.fill",
-                label: "Files",
+                label: "文件",
                 action: onConnect
             )
 
-            // Terminal (SFTP only)
-            if connection.connectionType == .sftp {
-                ContactActionButton(
-                    icon: "terminal.fill",
-                    label: "Terminal",
-                    action: onOpenTerminal
-                )
-            }
+            ContactActionButton(
+                icon: "terminal.fill",
+                label: "终端",
+                action: onOpenTerminal
+            )
 
             // Duplicate
             ContactActionButton(
                 icon: "doc.on.doc",
-                label: "Duplicate",
+                label: "复制",
                 action: onDuplicate
             )
 
             // Delete
             ContactActionButton(
                 icon: "trash",
-                label: "Delete",
+                label: "删除",
                 isDestructive: true,
                 action: onDelete
             )
@@ -114,12 +105,7 @@ struct ConnectionDetailView: View {
 
     private var detailCards: some View {
         VStack(spacing: 12) {
-            // Connection info card
-            if connection.connectionType == .sftp {
-                sftpCard
-            } else {
-                s3Card
-            }
+            sftpCard
 
             // Tags card
             if !connection.tags.isEmpty {
@@ -136,36 +122,16 @@ struct ConnectionDetailView: View {
     private var sftpCard: some View {
         GroupBox {
             VStack(spacing: 0) {
-                contactDetailRow(label: "host", value: connection.host, icon: "globe")
+                contactDetailRow(label: "主机", value: connection.host, icon: "globe")
                 Divider().padding(.leading, 36)
-                contactDetailRow(label: "port", value: "\(connection.port)", icon: "number")
+                contactDetailRow(label: "端口", value: "\(connection.port)", icon: "number")
                 Divider().padding(.leading, 36)
-                contactDetailRow(label: "username", value: connection.username, icon: "person")
+                contactDetailRow(label: "用户名", value: connection.username, icon: "person")
                 Divider().padding(.leading, 36)
-                contactDetailRow(label: "auth", value: connection.authMethod.displayName, icon: "key")
+                contactDetailRow(label: "验证方式", value: connection.authMethod.displayName, icon: "key")
                 if connection.authMethod == .privateKey, let keyPath = connection.privateKeyPath {
                     Divider().padding(.leading, 36)
-                    contactDetailRow(label: "key path", value: keyPath, icon: "doc.text")
-                }
-            }
-        }
-    }
-
-    private var s3Card: some View {
-        GroupBox {
-            VStack(spacing: 0) {
-                contactDetailRow(label: "access key", value: connection.username, icon: "key")
-                if let bucket = connection.s3Bucket {
-                    Divider().padding(.leading, 36)
-                    contactDetailRow(label: "bucket", value: bucket, icon: "externaldrive")
-                }
-                if let region = connection.s3Region {
-                    Divider().padding(.leading, 36)
-                    contactDetailRow(label: "region", value: region, icon: "globe")
-                }
-                if let endpoint = connection.s3Endpoint, !endpoint.isEmpty {
-                    Divider().padding(.leading, 36)
-                    contactDetailRow(label: "endpoint", value: endpoint, icon: "link")
+                    contactDetailRow(label: "私钥路径", value: keyPath, icon: "doc.text")
                 }
             }
         }
@@ -180,7 +146,7 @@ struct ConnectionDetailView: View {
                     .frame(width: 20)
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("tags")
+                    Text("标签")
                         .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                         .textCase(.uppercase)
@@ -212,7 +178,7 @@ struct ConnectionDetailView: View {
                     .frame(width: 20)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("notes")
+                    Text("备注")
                         .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                         .textCase(.uppercase)
@@ -259,8 +225,8 @@ struct ConnectionDetailView: View {
 
     private var footerSection: some View {
         VStack(spacing: 2) {
-            Text("Created \(connection.createdAt.formatted(date: .abbreviated, time: .shortened))")
-            Text("Updated \(connection.updatedAt.formatted(date: .abbreviated, time: .shortened))")
+            Text("创建于 \(connection.createdAt.formatted(date: .abbreviated, time: .shortened))")
+            Text("更新于 \(connection.updatedAt.formatted(date: .abbreviated, time: .shortened))")
         }
         .font(.system(size: 11))
         .foregroundStyle(.tertiary)

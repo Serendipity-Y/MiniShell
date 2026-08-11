@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import macSCP
+@testable import MiniShell
 
 @MainActor
 final class FileEditorViewModelTests: XCTestCase {

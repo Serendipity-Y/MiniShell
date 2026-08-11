@@ -59,7 +59,7 @@ final class ConnectionFlowUITests: XCTestCase {
 
     func testOpenNewConnectionSheet() {
         // Given
-        let addButton = app.toolbars.buttons["New Connection"].firstMatch
+        let addButton = app.toolbars.buttons["新建连接"].firstMatch
 
         // When
         if addButton.exists {
@@ -73,7 +73,7 @@ final class ConnectionFlowUITests: XCTestCase {
 
     func testNewConnectionFormFields() {
         // Given
-        let addButton = app.toolbars.buttons["New Connection"].firstMatch
+        let addButton = app.toolbars.buttons["新建连接"].firstMatch
 
         if addButton.exists {
             addButton.click()
@@ -82,13 +82,13 @@ final class ConnectionFlowUITests: XCTestCase {
             _ = sheet.waitForExistence(timeout: 2)
 
             // Then
-            XCTAssertTrue(sheet.textFields["Name"].exists || sheet.textFields.count > 0)
+            XCTAssertTrue(sheet.textFields["名称"].exists || sheet.textFields.count > 0)
         }
     }
 
     func testCancelNewConnection() {
         // Given
-        let addButton = app.toolbars.buttons["New Connection"].firstMatch
+        let addButton = app.toolbars.buttons["新建连接"].firstMatch
 
         if addButton.exists {
             addButton.click()
@@ -97,7 +97,7 @@ final class ConnectionFlowUITests: XCTestCase {
             _ = sheet.waitForExistence(timeout: 2)
 
             // When
-            let cancelButton = sheet.buttons["Cancel"]
+            let cancelButton = sheet.buttons["取消"]
             if cancelButton.exists {
                 cancelButton.click()
 
@@ -122,7 +122,7 @@ final class ConnectionFlowUITests: XCTestCase {
         let sidebar = app.outlines.firstMatch
 
         // Then
-        let allConnectionsRow = sidebar.staticTexts["All Connections"]
+        let allConnectionsRow = sidebar.staticTexts["全部连接"]
         XCTAssertTrue(allConnectionsRow.exists || true) // May have different UI
     }
 

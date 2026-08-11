@@ -32,13 +32,13 @@ struct TransfersPopover: View {
 
     private var header: some View {
         HStack {
-            Text("Transfers")
+            Text("传输")
                 .font(.system(size: 13, weight: .semibold))
 
             Spacer()
 
             if viewModel.hasActiveTransfers {
-                Button("Cancel All") {
+                Button("全部取消") {
                     viewModel.cancelAllTransfers()
                 }
                 .buttonStyle(.plain)
@@ -47,7 +47,7 @@ struct TransfersPopover: View {
             }
 
             if !viewModel.recentTransfers.isEmpty {
-                Button("Clear") {
+                Button("清除") {
                     viewModel.clearCompletedTransfers()
                 }
                 .buttonStyle(.plain)
@@ -65,7 +65,7 @@ struct TransfersPopover: View {
                 .font(.system(size: 32, weight: .light))
                 .foregroundStyle(.tertiary)
 
-            Text("No transfers")
+            Text("暂无传输任务")
                 .font(.system(size: 12))
                 .foregroundStyle(.secondary)
         }
@@ -155,12 +155,12 @@ struct TransferItemView: View {
                         .font(.system(size: 10))
                         .foregroundStyle(.secondary)
                 } else if transfer.status == .failed {
-                    Text(transfer.error ?? "Transfer failed")
+                    Text(transfer.error ?? "传输失败")
                         .font(.system(size: 10))
                         .foregroundStyle(.red)
                         .lineLimit(1)
                 } else if transfer.status == .cancelled {
-                    Text("Cancelled")
+                    Text("已取消")
                         .font(.system(size: 10))
                         .foregroundStyle(.orange)
                 }
@@ -175,8 +175,8 @@ struct TransferItemView: View {
             .buttonStyle(.plain)
             .opacity(transfer.isInProgress || isHovering ? 1 : 0)
             .help(transfer.isInProgress
-                ? (transfer.transferType == .download ? "Cancel download" : "Cancel upload")
-                : "Remove from list")
+                ? (transfer.transferType == .download ? "取消下载" : "取消上传")
+                : "从列表中移除")
             .frame(width: 20, alignment: .center)
         }
         .padding(.horizontal, 16)
@@ -193,18 +193,18 @@ struct TransferItemView: View {
     }
 
     private var accessibilityDescription: String {
-        let action = transfer.transferType == .download ? "downloading" : "uploading"
+        let action = transfer.transferType == .download ? "正在下载" : "正在上传"
         switch transfer.status {
         case .inProgress:
-            return "\(transfer.fileName), \(action), \(transfer.percentCompleted) percent complete"
+            return "\(transfer.fileName)，\(action)，已完成 \(transfer.percentCompleted)%"
         case .completed:
-            return "\(transfer.fileName), completed, \(transfer.totalSizeText)"
+            return "\(transfer.fileName)，已完成，\(transfer.totalSizeText)"
         case .failed:
-            return "\(transfer.fileName), failed, \(transfer.error ?? "Transfer failed")"
+            return "\(transfer.fileName)，失败，\(transfer.error ?? "传输失败")"
         case .cancelled:
-            return "\(transfer.fileName), cancelled"
+            return "\(transfer.fileName)，已取消"
         case .pending:
-            return "\(transfer.fileName), pending"
+            return "\(transfer.fileName)，等待中"
         }
     }
 
@@ -262,7 +262,7 @@ struct TransfersToolbarButton: View {
         Button {
             viewModel.isShowingTransfersPopover.toggle()
         } label: {
-            Label("Transfers", systemImage: viewModel.hasActiveTransfers ? "arrow.up.circle.fill" : "arrow.up.arrow.down.circle")
+            Label("传输", systemImage: viewModel.hasActiveTransfers ? "arrow.up.circle.fill" : "arrow.up.arrow.down.circle")
                 .symbolEffect(.pulse, options: .repeating, isActive: viewModel.hasActiveTransfers)
         }
         .overlay(alignment: .topTrailing) {
@@ -281,10 +281,10 @@ struct TransfersToolbarButton: View {
         .popover(isPresented: $viewModel.isShowingTransfersPopover, arrowEdge: .bottom) {
             TransfersPopover(viewModel: viewModel)
         }
-        .help("Transfers")
+        .help("传输")
         .accessibilityLabel(viewModel.activeTransferCount > 0
-            ? "Transfers, \(viewModel.activeTransferCount) active"
-            : "Transfers")
+            ? "传输，\(viewModel.activeTransferCount) 个进行中"
+            : "传输")
     }
 }
 

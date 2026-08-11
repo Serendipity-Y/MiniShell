@@ -13,15 +13,15 @@ enum ConnectionFormMode {
 
     var title: String {
         switch self {
-        case .create: return "New Connection"
-        case .edit: return "Edit Connection"
+        case .create: return "新建连接"
+        case .edit: return "编辑连接"
         }
     }
 
     var saveButtonTitle: String {
         switch self {
-        case .create: return "Create"
-        case .edit: return "Save"
+        case .create: return "创建"
+        case .edit: return "保存"
         }
     }
 }
@@ -32,8 +32,6 @@ struct ConnectionFormSheet: View {
     let folders: [Folder]
     let onSave: (Connection, String?) -> Void
     let onCancel: () -> Void
-
-    @State private var selectedType: ConnectionType = .sftp
 
     // Form fields
     @State private var name: String = ""
@@ -49,12 +47,6 @@ struct ConnectionFormSheet: View {
     @State private var selectedFolderId: UUID?
     @State private var tags: [String] = []
     @State private var newTag: String = ""
-
-    // S3-specific fields
-    @State private var s3Region: String = "us-east-1"
-    @State private var s3Bucket: String = ""
-    @State private var s3Endpoint: String = ""
-    @State private var s3SecretAccessKey: String = ""
 
     init(
         mode: ConnectionFormMode,
@@ -86,81 +78,44 @@ struct ConnectionFormSheet: View {
             Divider()
 
             Form {
-                // Type picker (only in create mode)
-                if !isEditMode {
-                    Section {
-                        Picker("Type", selection: $selectedType) {
-                            ForEach(ConnectionType.selectableCases, id: \.self) { type in
-                                Text(type.displayName).tag(type)
-                            }
-                        }
-                        .pickerStyle(.segmented)
-                        .onChange(of: selectedType) { _, newType in
-                            iconName = newType.iconName
-                            if newType == .sftp {
-                                port = "22"
-                            }
-                        }
-                    }
+                Section("连接") {
+                    TextField("名称", text: $name)
+                    TextField("主机", text: $host)
+                    TextField("端口", text: $port)
+                    TextField("用户名", text: $username)
                 }
 
-                // Connection details based on type
-                Section("Connection") {
-                    TextField("Name", text: $name)
-
-                    if selectedType == .sftp {
-                        TextField("Host", text: $host)
-                        TextField("Port", text: $port)
-                        TextField("Username", text: $username)
-                    } else if selectedType == .s3 {
-                        TextField("Access Key ID", text: $username)
-                        SecureField("Secret Access Key", text: $s3SecretAccessKey)
-                        TextField("Bucket", text: $s3Bucket)
-                        TextField("Region", text: $s3Region)
-                            .textContentType(.none)
-                        TextField("Custom Endpoint (optional)", text: $s3Endpoint)
-                            .textContentType(.URL)
-                    }
-                }
-
-                // Authentication (SFTP only)
-                if selectedType == .sftp {
-                    Section("Authentication") {
-                        Picker("Method", selection: $authMethod) {
-                            ForEach(AuthMethod.allCases, id: \.self) { method in
-                                Text(method.displayName).tag(method)
-                            }
-                        }
-
-                        if authMethod == .password {
-                            SecureField("Password", text: $password)
-                            Toggle("Save password in Keychain", isOn: $savePassword)
-                        } else {
-                            HStack {
-                                TextField("Private Key Path", text: $privateKeyPath)
-                                Button("Browse") {
-                                    browseForKey()
-                                }
-                            }
+                Section("身份验证") {
+                    Picker("方式", selection: $authMethod) {
+                        ForEach(AuthMethod.allCases, id: \.self) { method in
+                            Text(method.displayName).tag(method)
                         }
                     }
-                } else if selectedType == .s3 {
-                    Section("Security") {
-                        Toggle("Save credentials in Keychain", isOn: $savePassword)
+
+                    if authMethod == .password {
+                        SecureField("密码", text: $password)
+                        Toggle("将密码保存到钥匙串", isOn: $savePassword)
+                    } else {
+                        HStack {
+                            TextField("私钥路径", text: $privateKeyPath)
+                            Button("选择") {
+                                browseForKey()
+                            }
+                        }
                     }
                 }
 
                 // Organization
-                Section("Organization") {
-                    Picker("Folder", selection: $selectedFolderId) {
-                        Text("None").tag(nil as UUID?)
+                Section("整理") {
+                    Picker("文件夹", selection: $selectedFolderId) {
+                        Text("无").tag(nil as UUID?)
                         ForEach(folders) { folder in
                             Text(folder.name).tag(folder.id as UUID?)
                         }
                     }
 
                     // Tags
-                    LabeledContent("Tags") {
+                    LabeledContent("标签") {
                         VStack(alignment: .leading, spacing: 8) {
                             HStack {
                                 TextField("", text: $newTag)
@@ -191,8 +146,8 @@ struct ConnectionFormSheet: View {
                 }
 
                 // Optional
-                Section("Optional") {
-                    TextField("Description", text: $description, axis: .vertical)
+                Section("可选") {
+                    TextField("备注", text: $description, axis: .vertical)
                         .lineLimit(2...4)
 
                     IconPickerRow(selectedIcon: $iconName)
@@ -206,7 +161,7 @@ struct ConnectionFormSheet: View {
             HStack {
                 Spacer()
 
-                Button("Cancel") {
+                Button("取消") {
                     onCancel()
                 }
                 .keyboardShortcut(.cancelAction)
@@ -230,18 +185,11 @@ struct ConnectionFormSheet: View {
     // MARK: - Validation
 
     private var isValid: Bool {
-        switch selectedType {
-        case .sftp:
-            return !name.trimmed.isEmpty &&
-                !host.trimmed.isEmpty &&
-                !username.trimmed.isEmpty &&
-                (Int(port) ?? 0) > 0 && (Int(port) ?? 0) <= 65535 &&
-                (authMethod == .password || !privateKeyPath.trimmed.isEmpty)
-        case .s3:
-            return !name.trimmed.isEmpty &&
-                !username.trimmed.isEmpty &&
-                !s3Bucket.trimmed.isEmpty
-        }
+        !name.trimmed.isEmpty &&
+            !host.trimmed.isEmpty &&
+            !username.trimmed.isEmpty &&
+            (Int(port) ?? 0) > 0 && (Int(port) ?? 0) <= 65535 &&
+            (authMethod == .password || !privateKeyPath.trimmed.isEmpty)
     }
 
     // MARK: - Data Loading
@@ -259,18 +207,7 @@ struct ConnectionFormSheet: View {
             iconName = connection.iconName
             selectedFolderId = connection.folderId
             tags = connection.tags
-            selectedType = connection.connectionType
-            s3Region = connection.s3Region ?? "us-east-1"
-            s3Bucket = connection.s3Bucket ?? ""
-            s3Endpoint = connection.s3Endpoint ?? ""
-
-            if let saved = savedPassword {
-                if selectedType == .s3 {
-                    s3SecretAccessKey = saved
-                } else {
-                    password = saved
-                }
-            }
+            password = savedPassword ?? ""
         }
     }
 
@@ -284,7 +221,7 @@ struct ConnectionFormSheet: View {
             connection = Connection(
                 id: existing.id,
                 name: name.trimmed,
-                host: selectedType == .sftp ? host.trimmed : "",
+                host: host.trimmed,
                 port: portNumber,
                 username: username.trimmed,
                 authMethod: authMethod,
@@ -295,16 +232,12 @@ struct ConnectionFormSheet: View {
                 iconName: iconName,
                 folderId: selectedFolderId,
                 createdAt: existing.createdAt,
-                updatedAt: Date(),
-                connectionType: selectedType,
-                s3Region: selectedType == .s3 ? s3Region.trimmed : nil,
-                s3Bucket: selectedType == .s3 ? s3Bucket.trimmed : nil,
-                s3Endpoint: selectedType == .s3 && !s3Endpoint.trimmed.isEmpty ? s3Endpoint.trimmed : nil
+                updatedAt: Date()
             )
         } else {
             connection = Connection(
                 name: name.trimmed,
-                host: selectedType == .sftp ? host.trimmed : "",
+                host: host.trimmed,
                 port: portNumber,
                 username: username.trimmed,
                 authMethod: authMethod,
@@ -313,20 +246,11 @@ struct ConnectionFormSheet: View {
                 description: description.trimmed.isEmpty ? nil : description.trimmed,
                 tags: tags,
                 iconName: iconName,
-                folderId: selectedFolderId,
-                connectionType: selectedType,
-                s3Region: selectedType == .s3 ? s3Region.trimmed : nil,
-                s3Bucket: selectedType == .s3 ? s3Bucket.trimmed : nil,
-                s3Endpoint: selectedType == .s3 && !s3Endpoint.trimmed.isEmpty ? s3Endpoint.trimmed : nil
+                folderId: selectedFolderId
             )
         }
 
-        let passwordToSave: String?
-        if selectedType == .s3 {
-            passwordToSave = savePassword && !s3SecretAccessKey.isEmpty ? s3SecretAccessKey : nil
-        } else {
-            passwordToSave = savePassword && !password.isEmpty ? password : nil
-        }
+        let passwordToSave = savePassword && !password.isEmpty ? password : nil
         onSave(connection, passwordToSave)
     }
 
@@ -363,7 +287,7 @@ struct IconPickerRow: View {
 
     var body: some View {
         HStack {
-            Text("Icon")
+            Text("图标")
             Spacer()
             Button {
                 showingIconSelector.toggle()

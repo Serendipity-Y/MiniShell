@@ -71,7 +71,7 @@ final class ConnectionListViewModel {
     // MARK: - Computed Properties
 
     var filteredConnections: [Connection] {
-        var result = connections.filter(\.isSFTPConnection)
+        var result = connections
 
         switch selectedSidebarItem {
         case .allConnections:
@@ -142,21 +142,11 @@ final class ConnectionListViewModel {
             try await connectionRepository.save(connection)
 
             if connection.savePassword, let password = password, !password.isEmpty {
-                if connection.connectionType == .s3 {
-                    // For S3, store credentials (username is access key, password is secret)
-                    let credentials = S3Credentials(
-                        accessKeyId: connection.username,
-                        secretAccessKey: password
-                    )
-                    try keychainService.saveS3Credentials(credentials, for: connection.id)
-                } else {
-                    try keychainService.savePassword(password, for: connection.id)
-                }
+                try keychainService.savePassword(password, for: connection.id)
             }
 
             await loadData()
             isShowingNewConnectionSheet = false
-            AnalyticsService.trackConnectionCreated(protocol: .init(from: connection.connectionType))
             logInfo("Connection saved: \(connection.name)", category: .database)
         } catch {
             logError("Failed to save connection: \(error)", category: .database)
@@ -169,29 +159,14 @@ final class ConnectionListViewModel {
             try await connectionRepository.update(connection)
 
             if connection.savePassword, let password = password, !password.isEmpty {
-                if connection.connectionType == .s3 {
-                    let credentials = S3Credentials(
-                        accessKeyId: connection.username,
-                        secretAccessKey: password
-                    )
-                    try keychainService.updateS3Credentials(credentials, for: connection.id)
-                } else {
-                    try keychainService.updatePassword(password, for: connection.id)
-                }
+                try keychainService.updatePassword(password, for: connection.id)
             } else if !connection.savePassword {
-                if connection.connectionType == .s3 {
-                    try? keychainService.deleteS3Credentials(for: connection.id)
-                } else {
-                    try? keychainService.deletePassword(for: connection.id)
-                }
+                try? keychainService.deletePassword(for: connection.id)
             }
 
             await loadData()
             isShowingEditConnectionSheet = false
             connectionToEdit = nil
-            AnalyticsService.track(.connectionEdited, with: [
-                "protocol": AnalyticsService.ConnectionProtocol(from: connection.connectionType).rawValue
-            ])
             logInfo("Connection updated: \(connection.name)", category: .database)
         } catch {
             logError("Failed to update connection: \(error)", category: .database)
@@ -202,19 +177,11 @@ final class ConnectionListViewModel {
     func deleteConnection(_ connection: Connection) async {
         do {
             try await connectionRepository.delete(id: connection.id)
-            // Delete credentials based on connection type
-            if connection.connectionType == .s3 {
-                try? keychainService.deleteS3Credentials(for: connection.id)
-            } else {
-                try? keychainService.deletePassword(for: connection.id)
-            }
+            try? keychainService.deletePassword(for: connection.id)
             if selectedConnectionId == connection.id {
                 selectedConnectionId = nil
             }
             await loadData()
-            AnalyticsService.track(.connectionDeleted, with: [
-                "protocol": AnalyticsService.ConnectionProtocol(from: connection.connectionType).rawValue
-            ])
             logInfo("Connection deleted: \(connection.name)", category: .database)
         } catch {
             logError("Failed to delete connection: \(error)", category: .database)
@@ -243,7 +210,6 @@ final class ConnectionListViewModel {
             try await folderRepository.save(folder)
             await loadData()
             isShowingNewFolderSheet = false
-            AnalyticsService.track(.folderCreated)
             logInfo("Folder created: \(name)", category: .database)
         } catch {
             logError("Failed to create folder: \(error)", category: .database)
@@ -289,7 +255,6 @@ final class ConnectionListViewModel {
             await loadData()
             isShowingDeleteFolderAlert = false
             folderToDelete = nil
-            AnalyticsService.track(.folderDeleted)
             logInfo("Folder deleted: \(folder.name)", category: .database)
         } catch {
             logError("Failed to delete folder: \(error)", category: .database)
@@ -304,7 +269,6 @@ final class ConnectionListViewModel {
 
         Task { @MainActor in
             // Gate connection behind biometric auth if configured
-            pendingConnectionDestination = .fileTransfer
             let allowed = await AppLockManager.shared.authenticateForConnection()
             guard allowed else {
                 logInfo("Connection cancelled: biometric auth denied", category: .auth)
@@ -312,29 +276,19 @@ final class ConnectionListViewModel {
             }
 
             connectionToConnect = connection
+            pendingConnectionDestination = .fileTransfer
 
-            if connection.connectionType == .s3 {
-                // For S3, check for saved credentials
-                if let credentials = keychainService.getS3Credentials(for: connection.id) {
-                    logInfo("Found saved S3 credentials, opening browser", category: .ui)
-                    openFileBrowser(for: connection, password: credentials.secretAccessKey)
-                } else {
-                    logInfo("No saved S3 credentials, showing prompt", category: .ui)
-                    isShowingPasswordPrompt = true
-                }
+            if let savedPassword = keychainService.getPassword(for: connection.id) {
+                logInfo("Found saved password, opening browser", category: .ui)
+                openFileBrowser(for: connection, password: savedPassword)
+                clearPendingConnectionRequest()
+            } else if connection.authMethod == .privateKey {
+                logInfo("Private key auth, connecting without password", category: .ui)
+                openFileBrowser(for: connection, password: "")
+                clearPendingConnectionRequest()
             } else {
-                // For SFTP, check for saved password
-                if let savedPassword = keychainService.getPassword(for: connection.id) {
-                    logInfo("Found saved password, opening browser", category: .ui)
-                    openFileBrowser(for: connection, password: savedPassword)
-                } else if connection.authMethod == .privateKey {
-                    // Key-based auth doesn't require a password — connect directly
-                    logInfo("Private key auth, connecting without password", category: .ui)
-                    openFileBrowser(for: connection, password: "")
-                } else {
-                    logInfo("No saved password, showing prompt", category: .ui)
-                    isShowingPasswordPrompt = true
-                }
+                logInfo("No saved password, showing prompt", category: .ui)
+                isShowingPasswordPrompt = true
             }
         }
     }
@@ -362,18 +316,12 @@ final class ConnectionListViewModel {
             username: connection.username,
             password: password,
             authMethod: connection.authMethod,
-            privateKeyPath: connection.privateKeyPath,
-            connectionType: connection.connectionType,
-            s3Region: connection.s3Region,
-            s3Bucket: connection.s3Bucket,
-            s3Endpoint: connection.s3Endpoint,
-            s3SecretAccessKey: connection.connectionType == .s3 ? password : nil
+            privateKeyPath: connection.privateKeyPath
         )
 
         let windowId = windowManager.storeFileBrowserData(data)
         logInfo("Stored window data with ID: \(windowId)", category: .ui)
         pendingWindowId = windowId
-        AnalyticsService.trackConnectionConnected(protocol: .init(from: connection.connectionType), success: true)
         logInfo("Set pendingWindowId to: \(windowId)", category: .ui)
     }
 
@@ -389,12 +337,6 @@ final class ConnectionListViewModel {
     // MARK: - Terminal Operations
 
     func openTerminal(for connection: Connection, password: String) {
-        // Only allow terminal for SFTP connections
-        guard connection.connectionType == .sftp else {
-            logWarning("Terminal only supported for SFTP connections", category: .ui)
-            return
-        }
-
         let data = TerminalWindowData(
             connectionId: connection.id,
             connectionName: connection.name,
@@ -411,11 +353,6 @@ final class ConnectionListViewModel {
     }
 
     func requestTerminal(for connection: Connection) {
-        if connection.connectionType == .s3 {
-            logWarning("Terminal not supported for S3 connections", category: .ui)
-            return
-        }
-
         Task { @MainActor in
             // Gate terminal behind biometric auth if configured
             let allowed = await AppLockManager.shared.authenticateForConnection()
@@ -430,10 +367,12 @@ final class ConnectionListViewModel {
             // Check for saved password
             if let savedPassword = keychainService.getPassword(for: connection.id) {
                 openTerminal(for: connection, password: savedPassword)
+                clearPendingConnectionRequest()
             } else if connection.authMethod == .privateKey {
                 // Key-based auth doesn't require a password — connect directly
                 logInfo("Private key auth, opening terminal without password", category: .ui)
                 openTerminal(for: connection, password: "")
+                clearPendingConnectionRequest()
             } else {
                 // Need to prompt for password
                 isShowingPasswordPrompt = true
@@ -448,9 +387,9 @@ final class ConnectionListViewModel {
     }
 
     private func clearPendingConnectionRequest() {
-        pendingConnectionDestination = nil
         isShowingPasswordPrompt = false
         connectionToConnect = nil
+        pendingConnectionDestination = nil
     }
 
     // MARK: - Edit Actions
@@ -472,11 +411,7 @@ final class ConnectionListViewModel {
             description: connection.description,
             tags: connection.tags,
             iconName: connection.iconName,
-            folderId: connection.folderId,
-            connectionType: connection.connectionType,
-            s3Region: connection.s3Region,
-            s3Bucket: connection.s3Bucket,
-            s3Endpoint: connection.s3Endpoint
+            folderId: connection.folderId
         )
 
         // Copy password if saved

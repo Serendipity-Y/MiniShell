@@ -23,6 +23,6 @@ final class CheckForUpdatesViewModel: ObservableObject {
 
     func checkForUpdates() {
         updater.checkForUpdates()
-        logInfo("Manual update check triggered", category: .app)
+        logInfo("已触发手动检查更新", category: .app)
     }
 }

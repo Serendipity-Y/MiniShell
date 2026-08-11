@@ -19,11 +19,6 @@ struct FileBrowserWindowData: Sendable {
     let password: String
     let authMethod: AuthMethod
     let privateKeyPath: String?
-    let connectionType: ConnectionType
-    let s3Region: String?
-    let s3Bucket: String?
-    let s3Endpoint: String?
-    let s3SecretAccessKey: String?
 
     init(
         connectionId: UUID,
@@ -33,12 +28,7 @@ struct FileBrowserWindowData: Sendable {
         username: String,
         password: String,
         authMethod: AuthMethod,
-        privateKeyPath: String?,
-        connectionType: ConnectionType = .sftp,
-        s3Region: String? = nil,
-        s3Bucket: String? = nil,
-        s3Endpoint: String? = nil,
-        s3SecretAccessKey: String? = nil
+        privateKeyPath: String?
     ) {
         self.connectionId = connectionId
         self.connectionName = connectionName
@@ -48,11 +38,6 @@ struct FileBrowserWindowData: Sendable {
         self.password = password
         self.authMethod = authMethod
         self.privateKeyPath = privateKeyPath
-        self.connectionType = connectionType
-        self.s3Region = s3Region
-        self.s3Bucket = s3Bucket
-        self.s3Endpoint = s3Endpoint
-        self.s3SecretAccessKey = s3SecretAccessKey
     }
 }
 
@@ -68,11 +53,6 @@ struct FileEditorWindowData: Sendable {
     let password: String
     let authMethod: AuthMethod
     let privateKeyPath: String?
-    // S3-specific fields
-    let connectionType: ConnectionType
-    let s3Region: String?
-    let s3Bucket: String?
-    let s3Endpoint: String?
 
     init(
         filePath: String,
@@ -84,11 +64,7 @@ struct FileEditorWindowData: Sendable {
         username: String,
         password: String,
         authMethod: AuthMethod,
-        privateKeyPath: String?,
-        connectionType: ConnectionType = .sftp,
-        s3Region: String? = nil,
-        s3Bucket: String? = nil,
-        s3Endpoint: String? = nil
+        privateKeyPath: String?
     ) {
         self.filePath = filePath
         self.fileName = fileName
@@ -100,10 +76,6 @@ struct FileEditorWindowData: Sendable {
         self.password = password
         self.authMethod = authMethod
         self.privateKeyPath = privateKeyPath
-        self.connectionType = connectionType
-        self.s3Region = s3Region
-        self.s3Bucket = s3Bucket
-        self.s3Endpoint = s3Endpoint
     }
 }
 

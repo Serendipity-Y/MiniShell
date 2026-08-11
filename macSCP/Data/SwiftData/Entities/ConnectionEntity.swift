@@ -24,12 +24,6 @@ final class ConnectionEntity {
     var createdAt: Date
     var updatedAt: Date
 
-    // S3-specific fields (connectionType defaults to "sftp" for migration compatibility)
-    var connectionType: String = "sftp"
-    var s3Region: String?
-    var s3Bucket: String?
-    var s3Endpoint: String?
-
     var folder: FolderEntity?
 
     init(
@@ -45,11 +39,7 @@ final class ConnectionEntity {
         tags: [String] = [],
         iconName: String = "server.rack",
         createdAt: Date = Date(),
-        updatedAt: Date = Date(),
-        connectionType: String = "sftp",
-        s3Region: String? = nil,
-        s3Bucket: String? = nil,
-        s3Endpoint: String? = nil
+        updatedAt: Date = Date()
     ) {
         self.id = id
         self.name = name
@@ -64,9 +54,5 @@ final class ConnectionEntity {
         self.iconName = iconName
         self.createdAt = createdAt
         self.updatedAt = updatedAt
-        self.connectionType = connectionType
-        self.s3Region = s3Region
-        self.s3Bucket = s3Bucket
-        self.s3Endpoint = s3Endpoint
     }
 }
