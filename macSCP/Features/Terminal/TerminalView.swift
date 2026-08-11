@@ -67,6 +67,7 @@ struct TerminalContentView: View {
         VStack(spacing: 0) {
             // Terminal content
             terminalContent
+                .clipped()
 
             Divider()
 

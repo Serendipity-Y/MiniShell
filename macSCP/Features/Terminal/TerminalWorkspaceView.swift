@@ -71,6 +71,7 @@ struct TerminalWorkspaceView: View {
     var body: some View {
         VStack(spacing: 0) {
             tabBar
+                .zIndex(1)
 
             Divider()
 
@@ -83,6 +84,7 @@ struct TerminalWorkspaceView: View {
                     isActive: true
                 )
                 .id(selectedTab.id)
+                .zIndex(0)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
